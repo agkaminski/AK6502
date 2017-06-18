@@ -13,8 +13,9 @@
 
 static inline void fatal(const char *fname, int lineno, const char *fcname, const char *msg, ...)
 {
-	fprintf(stderr, RED"[FATAL] [%s] @%d (%s): "msg"\n", fname, lineno, fcname, __VA_ARGS__);
-	fprintf(stderr, "Simulation stopped.\n"RESET);
+	fprintf(stderr, RED "[FATAL] [%s] @%d (%s): ", fname, lineno, fcname);
+	fprintf(stderr, msg, __VA_ARGS__);
+	fprintf(stderr, "\nSimulation stopped.\n" RESET);
 	fprintf(stderr, "Press Any Key to Exit...\n");
 	getchar();
 	exit(1);
@@ -22,12 +23,16 @@ static inline void fatal(const char *fname, int lineno, const char *fcname, cons
 
 static inline void warn(const char *fname, int lineno, const char *fcname, const char *msg, ...)
 {
-	fprintf(stderr, YEL"[WARNING] [%s] @%d (%s): "msg"\n"RESET, fname, lineno, fcname, __VA_ARGS__);
+	fprintf(stderr, YEL "[WARNING] [%s] @%d (%s): ", fname, lineno, fcname);
+	fprintf(stderr, msg, __VA_ARGS__);
+	fprintf(stderr, "\n" RESET);
 }
 
 static inline void debug(const char *fname, int lineno, const char *fcname, const char *msg, ...)
 {
-	fprintf(stderr, GRN"[DEBUG] [%s] @%d (%s): "msg"\n"RESET, fname, lineno, fcname, __VA_ARGS__);
+	fprintf(stderr, GRN "[DEBUG] [%s] @%d (%s): ", fname, lineno, fcname);
+	fprintf(stderr, msg, __VA_ARGS__);
+	fprintf(stderr, "\n" RESET);
 }
 
 #define FATAL(msg, ...) fatal(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)

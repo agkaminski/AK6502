@@ -7,7 +7,7 @@ typedef struct bustree {
 	struct bustree *right;
 	struct bustree *left;
 	busentry_t *entry;
-} bustree_t
+} bustree_t;
 
 static bustree_t bustree_root = { NULL, NULL, NULL };
 

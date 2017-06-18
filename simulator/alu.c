@@ -68,7 +68,7 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 			result += 0x60;
 	}
 
-	alu_flags(result, flags, flag_carry | flag_sign | flag_zero)
+	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 
 	if ((a ^ result) & (b ^ result) & 0x80)
 		*flags |= flag_ovfl;
@@ -213,7 +213,7 @@ u8 alu_cmp(u8 a, u8 b, u8 *flags)
 
 	result = a - b + 1;
 
-	alu_flags(result, flags, flag_carry | flag_sign | flag_zero)
+	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 
 	return result & 0xff;
 }

@@ -69,7 +69,7 @@ static void exec_tya(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static const void (*exec_instr)(cpustate_t*, argtype_t, u8*, cycles_t*)[] = {
 	
-}
+};
 
 static void exec_push(cpustate_t *cpu, u8 data)
 {

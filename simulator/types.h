@@ -1,15 +1,15 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
 
-typedef u8 unsigned char
-typedef u16 unsigned short
-typedef u32 unsigned long
-typedef u64 unsigned long long
+typedef unsigned char      u8;
+typedef unsigned short     u16;
+typedef unsigned long      u32;
+typedef unsigned long long u64;
 
-typedef s8 signed char
-typedef s16 signed short
-typedef s32 signed long
-typedef s64 signed long long
+typedef signed char        s8;
+typedef signed short       s16;
+typedef signed long        s32;
+typedef signed long long   s64;
 
 typedef struct {
 	u16 pc;
