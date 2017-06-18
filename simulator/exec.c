@@ -10,67 +10,6 @@
 #define RST_VECTOR 0xfffc
 #define NMI_VECTOR 0xfffa
 
-static void exec_adc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_and(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_asl(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bcc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bcs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_beq(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bit(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bmi(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bne(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bpl(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_brk(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bvc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_bvs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_clc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_cld(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_cli(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_clv(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_cmp(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_cpx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_cpy(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_dec(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_dex(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_dey(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_eor(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_inc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_inx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_iny(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_jmp(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_jsr(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_lda(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_ldx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_ldy(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_lsr(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_nop(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_ora(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_pha(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_php(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_pla(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_plp(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_rol(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_ror(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_rti(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_rts(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sbc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sec(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sed(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sei(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sta(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_stx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_sty(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_tax(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_tay(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_tsx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_txa(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_txs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-static void exec_tya(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles);
-
-static const void (*exec_instr)(cpustate_t*, argtype_t, u8*, cycles_t*)[] = {
-	
-};
-
 static void exec_push(cpustate_t *cpu, u8 data)
 {
 	u16 addr;
@@ -972,4 +911,23 @@ static void exec_tya(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 	DEBUG("Executing TYA");
 
 	*cycles += 1;
+}
+
+static const void (*exec_instr)(cpustate_t*, argtype_t, u8*, cycles_t*)[] = {
+	exec_adc, exec_and, exec_asl, exec_bcc, exec_bcs, exec_beq, exec_bit, exec_bmi,
+	exec_bne, exec_bpl, exec_brk, exec_bvc, exec_bvs, exec_clc, exec_cld, exec_cli,
+	exec_clv, exec_cmp, exec_cpx, exec_cpy, exec_dec, exec_dex, exec_dey, exec_eor,
+	exec_inc, exec_inx, exec_iny, exec_jmp, exec_jsr, exec_lda, exec_ldx, exec_ldy,
+	exec_lsr, exec_nop, exec_ora, exec_pha, exec_php, exec_pla, exec_plp, exec_rol,
+	exec_ror, exec_rti, exec_rts, exec_sbc, exec_sec, exec_sed, exec_sei, exec_sta,
+	exec_stx, exec_sty, exec_tax, exec_tay, exec_tsx, exec_txa, exec_txs, exec_tya
+};
+
+void exec_execute(cpustate_t *cpu, opcode_t instruction, argtype_t argtype, u8 *args, cycles_t *cycles)
+{
+	if (instruction > sizeof(exec_instr) / sizeof(exec_instr[0])) {
+		FATAL("Tried to execute unknown instruction %u", instruction);
+	}
+
+	exec_instr[instruction](cpu, argtype, args, cycles);
 }

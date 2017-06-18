@@ -14,6 +14,8 @@ exec.h
 flags.h
 io.c
 io.h
+main.c
 memory.c
 memory.h
+threads.h
 types.h
