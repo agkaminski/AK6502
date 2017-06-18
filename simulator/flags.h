@@ -7,6 +7,7 @@ enum {
 	flag_irqd =  0x04,
 	flag_bcd =   0x08,
 	flag_brk =   0x10,
+	flag_one =   0x20,
 	flag_ovrf =  0x40,
 	flag_sign =  0x80
 };

@@ -232,7 +232,7 @@ static void exec_brk(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 	exec_push(cpu, cpu->pc & 0xff);
 
 	flags = cpu->flags;
-	flags |= 0x30;
+	flags |= flag_one | flag_brk;
 	exec_push(cpu, flags);
 
 	cpu->flags |= flag_irqd;
@@ -253,7 +253,7 @@ static void exec_bvc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	addr = (args[1] << 8) | args[0];
 
-	if (!(cpu->flags & flag_ovfl)) {
+	if (!(cpu->flags & flag_ovrf)) {
 		DEBUG("BVC branch taken, new pc 0x%04x", addr);
 		cpu->pc = addr;
 		*cycles += 1;
@@ -268,7 +268,7 @@ static void exec_bvs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	addr = (args[1] << 8) | args[0];
 
-	if (cpu->flags & flag_ovfl) {
+	if (cpu->flags & flag_ovrf) {
 		DEBUG("BVS branch taken, new pc 0x%04x", addr);
 		cpu->pc = addr;
 		*cycles += 1;
@@ -306,7 +306,7 @@ static void exec_cli(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_clv(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->flags &= ~flag_ovfl;
+	cpu->flags &= ~flag_ovrf;
 
 	DEBUG("Performing CLV");
 
@@ -646,7 +646,7 @@ static void exec_php(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 	u8 flags;
 
 	flags = cpu->flags;
-	flags |= 0x30;
+	flags |= flag_one | flag_brk;
 
 	exec_push(cpu, flags);
 
@@ -667,7 +667,7 @@ static void exec_pla(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 static void exec_plp(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
 	cpu->flags = exec_pop(cpu);
-	cpu->flags &= 0xCF;
+	cpu->flags &= flag_carry | flag_zero | flag_irqd | flag_bcd | flag_ovrf | flag_sign;
 
 	DEBUG("Performing PLP");
 
@@ -737,7 +737,7 @@ static void exec_rti(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 	u16 addr;
 
 	cpu->flags = exec_pop(cpu);
-	cpu->flags &= 0xCF;
+	cpu->flags &= flag_carry | flag_zero | flag_irqd | flag_bcd | flag_ovrf | flag_sign;
 
 	addr = exec_pop(cpu);
 	addr |= (u16)exec_pop(cpu) << 8;
@@ -930,4 +930,63 @@ void exec_execute(cpustate_t *cpu, opcode_t instruction, argtype_t argtype, u8 *
 	}
 
 	exec_instr[instruction](cpu, argtype, args, cycles);
+}
+
+void exec_irq(cpustate_t *cpu, cycles_t *cycles)
+{
+	u8 flags;
+
+	DEBUG("Received IRQ");
+
+	exec_push(cpu, (cpu->pc >> 8) & 0xff);
+	exec_push(cpu, cpu->pc & 0xff);
+
+	flags = cpu->flags;
+	flags |= flag_one;
+	flags &= ~flag_brk;
+	exec_push(cpu, flags);
+
+	cpu->pc = bus_read(IRQ_VECTOR);
+	cpu->pc |= (u16)bus_read(IRQ_VECTOR + 1) << 8;
+
+	cpu->flags |= flag_irqd;
+
+	*cycles += 7;
+}
+
+void exec_nmi(cpustate_t *cpu, cycles_t *cycles)
+{
+	u8 flags;
+
+	DEBUG("Received NMI");
+
+	exec_push(cpu, (cpu->pc >> 8) & 0xff);
+	exec_push(cpu, cpu->pc & 0xff);
+
+	flags = cpu->flags;
+	flags |= flag_one;
+	flags &= ~flag_brk;
+	exec_push(cpu, flags);
+
+	cpu->pc = bus_read(NMI_VECTOR);
+	cpu->pc |= (u16)bus_read(NMI_VECTOR + 1) << 8;
+
+	cpu->flags |= flag_irqd;
+
+	*cycles += 7;
+}
+
+void exec_rst(cpustate_t *cpu, cycles_t *cycles)
+{
+	DEBUG("Received RST");
+
+	cpu->a = 0;
+	cpu->x = 0;
+	cpu->flags = flag_one;
+	cpu->sp = 0xff;
+
+	cpu->pc = bus_read(RST_VECTOR);
+	cpu->pc |= (u16)bus_read(RST_VECTOR + 1) << 8;
+
+	*cycles += 4;
 }

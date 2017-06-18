@@ -5,6 +5,7 @@
 #include "decoder.h"
 #include "exec.h"
 #include "bus.h"
+#include "flags.h"
 
 #define TIME_PER_CYCLE 1 /* us */
 
@@ -27,17 +28,17 @@ enum { STATE_STALL, STATE_NORMAL, STATE_NMI, STATE_IRQ, STATE_RST, STATE_END };
 
 static core_reset(cpustate_t *cpu, cycles_t *cycles)
 {
-
+	exec_rst(cpu, cycles);
 }
 
 static core_nmi(cpustate_t *cpu, cycles_t *cycles)
 {
-
+	exec_nmi(cpu, cycles);
 }
 
 static core_irq(cpustate_t *cpu, cycles_t *cycles)
 {
-
+	exec_irq(cpu, cycles);
 }
 
 static void core_normal(cpustate_t *cpu, cycles_t *cycles)
@@ -49,6 +50,8 @@ static void core_normal(cpustate_t *cpu, cycles_t *cycles)
 	instruction = decode(core_nextpc(cpu));
 	argtype = addrmode_getArgs(cpu, args, instruction.mode, &cycles);
 	exec_execute(cpu, instruction.opcode, argtype, args, &cycles);
+
+	*cycles += 1;
 }
 
 static void core_thread(void *arg)
@@ -57,6 +60,8 @@ static void core_thread(void *arg)
 	int lastNmi;
 
 	lastNmi = 0;
+
+	core_reset(&core_global.cpu, &core_global.cycles);
 
 	while (1) {
 		lock(&core_global.mutex);
@@ -70,7 +75,7 @@ static void core_thread(void *arg)
 				core_global.state = STATE_NMI;
 				break;
 			}
-			else if (core_global.irq_state != 0) {
+			else if ((core_global.irq_state != 0) && !(core_global.cpu.flags & flag_irqd)) {
 				core_global.state = STATE_IRQ;
 				break;
 			}
@@ -97,6 +102,9 @@ static void core_thread(void *arg)
 			unlock(&core_global.mutex);
 			thread_exit(NULL);
 		}
+
+		if (!core_global.nmi_state)
+			lastNmi = 0;
 
 		cycles = core_global.cycles;
 
@@ -223,7 +231,7 @@ int core_init(thread_t *thread)
 	core_global.cycles = 0;
 	core_global.irq_state = 0;
 	core_global.nmi_state = 0;
-	core_global.rst_state = 0;
+	core_global.rst_state = 1;
 	core_global.step = 0;
 	core_global.run = 0;
 	core_global.end = 0;

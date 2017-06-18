@@ -17,5 +17,7 @@ io.h
 main.c
 memory.c
 memory.h
+serial.c
+serial.h
 threads.h
 types.h

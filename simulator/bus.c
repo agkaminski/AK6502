@@ -108,7 +108,7 @@ void bus_write(u16 addr, u8 data)
 	if (node->entry == NULL)
 		FATAL("Corrupted tree - entry == NULL");
 
-	node->entry->write(addr, data);
+	node->entry->write(addr - node->entry->begin, data);
 }
 
 u8 bus_read(u16 addr)
@@ -123,7 +123,7 @@ u8 bus_read(u16 addr)
 	if (node->entry == NULL)
 		FATAL("Corrupted tree - entry == NULL");
 
-	return node->entry->read(addr);
+	return node->entry->read(addr - node->entry->begin);
 }
 
 void bus_register(busentry_t entry)
