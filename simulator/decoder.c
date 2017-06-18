@@ -87,11 +87,20 @@ static const char *opcode_string[] = {
 	"ADC", "AND", "ASL", "BCC", "BCS", "BEQ", "BIT", "BMI",
 	"BNE", "BPL", "BRK", "BVC", "BVS", "CLC", "CLD", "CLI",
 	"CLV", "CMP", "CPX", "CPY", "DEC", "DEX", "DEY", "EOR",
-	"INC", "INX", "INY", "JMP", "JSR", "LDA", "LDY", "LDY",
+	"INC", "INX", "INY", "JMP", "JSR", "LDA", "LDX", "LDY",
 	"LSR", "NOP", "ORA", "PHA", "PHP", "PLA", "PLP", "ROL",
 	"ROR", "RTI", "RTS", "SBC", "SEC", "SED", "SEI", "STA",
-	"STX", "STY", "TAX", "TAY", "TSX", "TXA", "TXS", "TYA"
+	"STX", "STY", "TAX", "TAY", "TSX", "TXA", "TXS", "TYA",
+	"ERR"
 };
+
+const char *opcodetostring(opcode_t opcode)
+{
+	if (opcode > sizeof(opcode_string) / sizeof(opcode_string[0]))
+		opcode = sizeof(opcode_string) / sizeof(opcode_string[0]);
+
+	return opcode_string[opcode];
+}
 
 opinfo_t decode(u8 opcode)
 {
@@ -99,11 +108,10 @@ opinfo_t decode(u8 opcode)
 	
 	info = decoder_table[opcode];
 	
-	if (info.opcode == NOP && opcode != 0xea) {
-		WARN("Invalid instruction 0x%02h interpreted as NOP");
-	}
+	if (info.opcode == NOP && opcode != 0xea)
+		WARN("Invalid instruction 0x%02x interpreted as NOP");
 	
-	DEBUG("Decoded 0x%02h as %s", opcode, opcode_string[info.opcode]);
+	DEBUG("Decoded 0x%02x as %s", opcode, opcode_string[info.opcode]);
 	
 	return info;
 }

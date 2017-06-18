@@ -30,10 +30,10 @@ static inline void debug(const char *fname, int lineno, const char *fcname, cons
 	fprintf(stderr, GRN"[DEBUG] [%s] @%d (%s): "msg"\n"RESET, fname, lineno, fcname, __VA_ARGS__);
 }
 
-#define FATAL(msg, ...) fatal(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__);
+#define FATAL(msg, ...) fatal(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 		
-#define WARN(msg, ...) warn(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__);
+#define WARN(msg, ...) warn(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 
-#define DEBUG(msg, ...) debug(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__);
+#define DEBUG(msg, ...) debug(__FILE__, __LINE__, __func__, msg, ##__VA_ARGS__)
 
 #endif
