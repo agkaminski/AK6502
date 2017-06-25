@@ -16,6 +16,4 @@ u8 bus_read(u16 addr);
 
 void bus_register(busentry_t entry);
 
-void bus_cleanup(void);
-
 #endif

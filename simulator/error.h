@@ -27,7 +27,7 @@
 	} while (0)
 	
 #define DEBUG(msg, ...) do { \
-		fprintf(stderr, GRN "[WARNING] [%s:%d] (%s): ", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, GRN "[DEBUG] [%s:%d] (%s): ", __FILE__, __LINE__, __func__); \
 		fprintf(stderr, msg, ##__VA_ARGS__); \
 		fprintf(stderr, "\n" RESET); \
 	} while (0)

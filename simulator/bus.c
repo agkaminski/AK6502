@@ -4,142 +4,138 @@
 #include "bus.h"
 #include "error.h"
 
-typedef struct bustree {
-	struct bustree *right;
-	struct bustree *left;
-	busentry_t *entry;
-} bustree_t;
+typedef struct list {
+	struct list *prev;
+	struct list *next;
+	busentry_t entry;
+} list_t;
 
-static bustree_t bustree_root = { NULL, NULL, NULL };
+list_t *buslist;
 
-static void bus_treeDump(bustree_t *tree)
+static int list_add(list_t **list, list_t *node)
 {
-	//TODO
-}
+	list_t *curr;
 
-static int bus_treeAdd(bustree_t *root, busentry_t *entry)
-{
-	if (entry->begin > entry->end)
-		FATAL("Invalid entry (b: 0x%04x > e: 0x%04x)", entry->begin, entry->end);
+	if (node->entry.begin > node->entry.end)
+		FATAL("Invalid entry b: 0x%04x e: 0x%04x", node->entry.begin, node->entry.end);
 
-	if (root->entry == NULL) {
-		root->entry = entry;
-		DEBUG("Inserting entry b: 0x%04x > e: 0x%04x at root", entry->begin, entry->end);
+	curr = *list;
+
+	if (*list == NULL) {
+		DEBUG("Inserting b: 0x%04x e: 0x%04x in empty list", node->entry.begin, node->entry.end);
+		*list = node;
+		node->next = NULL;
+		node->prev = NULL;
 		return 0;
 	}
 
-	if (root->left != NULL) {
-		if (root->left->entry->begin > entry->end)
-			return bus_treeAdd(root->left, entry);
+	while (1) {
+		if (curr->entry.begin > node->entry.end) {
+			if (curr->prev == NULL) {
+				DEBUG("Inserting b: 0x%04x e: 0x%04x in prev", node->entry.begin, node->entry.end);
+				curr->prev = node;
+				node->next = curr;
+				node->prev = NULL;
+				return 0;
+			}
+
+			if (curr->prev->entry.end < node->entry.begin) {
+				DEBUG("Inserting b: 0x%04x e: 0x%04x between prev and curr", node->entry.begin, node->entry.end);
+				curr->prev->next = node;
+				node->prev = curr->prev;
+				node->next = curr;
+				curr->prev = node;
+				return 0;
+			}
+
+			if (curr->prev->entry.begin > node->entry.end) {
+				DEBUG("Iterating prev");
+				curr = curr->prev;
+				continue;
+			}
+		}
+
+		if (curr->entry.end < node->entry.begin) {
+			if (curr->next == NULL) {
+				DEBUG("Inserting b: 0x%04x e: 0x%04x in next", node->entry.begin, node->entry.end);
+				curr->next = node;
+				node->next = NULL;
+				node->prev = curr;
+				return 0;
+			}
+
+			if (curr->next->entry.begin > node->entry.end) {
+				DEBUG("Inserting b: 0x%04x e: 0x%04x between next and curr", node->entry.begin, node->entry.end);
+				curr->next->prev = node;
+				node->next = curr->next;
+				node->prev = curr;
+				curr->next = node;
+				return 0;
+			}
+
+			if (curr->next->entry.end < node->entry.begin) {
+				DEBUG("Iterating next");
+				curr = curr->next;
+				continue;
+			}
+		}
 	}
-
-	if (root->right != NULL) {
-		if (root->right->entry->end < entry->begin)
-			return bus_treeAdd(root->right, entry);
-	}
-
-	if (root->left == NULL && root->entry->begin > entry->end) {
-		if ((root->left = malloc(sizeof(bustree_t))) == NULL)
-			FATAL("Out of memory!");
-		
-		root->left->left = NULL;
-		root->left->right = NULL;
-		root->left->entry = entry;
-
-		DEBUG("Inserting entry b: 0x%04x > e: 0x%04x at new left node", entry->begin, entry->end);
-		
-		return 0;
-	}
-
-	if (root->right == NULL && root->entry->end < entry->begin) {
-		if ((root->right = malloc(sizeof(bustree_t))) == NULL)
-			FATAL("Out of memory!");
-
-		root->right->left = NULL;
-		root->right->right = NULL;
-		root->right->entry = entry;
-
-		DEBUG("Inserting entry b: 0x%04x > e: 0x%04x at new right node", entry->begin, entry->end);
-		
-		return 0;
-	}
-
-	bus_treeDump(&bustree_root);
-	FATAL("Could not insert entry b: 0x%04x e: 0x%04x", entry->begin, entry->end);
-
-	return -1;
 }
 
-static void bus_treeCleanup(bustree_t *root)
+static list_t *list_find(list_t *list, u16 addr)
 {
-	if (root->left != NULL)
-		bus_treeCleanup(root->left);
-	if (root->right != NULL)
-		bus_treeCleanup(root->right);
-
-	free(root->entry);
-
-	if (root != &bustree_root)
-		free(root);
-}
-
-static bustree_t *bus_treeFind(bustree_t *root, u16 addr)
-{
-	if (root == NULL)
+	if (list == NULL) {
+		DEBUG("Not found");
 		return NULL;
+	}
 
-	if (root->entry->begin >= addr && root->entry->end <= addr)
-		return root;
+	if (list->entry.begin <= addr && list->entry.end >= addr) {
+		DEBUG("Found addr 0x%04x in b: 0x%04x e: 0x%04x", addr, list->entry.begin, list->entry.end);
+		return list;
+	}
 
-	if (root->entry->end > addr)
-		return bus_treeFind(root->left, addr);
-	else
-		return bus_treeFind(root->right, addr);
+	if (list->entry.begin > addr) {
+		DEBUG("Searching 0x%04x prev (curr b: 0x%04x e: 0x%04x)", addr, list->entry.begin, list->entry.end);
+		return list_find(list->prev, addr);
+	}
+	else {
+		DEBUG("Searching 0x%04x next (curr b: 0x%04x e: 0x%04x)", addr, list->entry.begin, list->entry.end);
+		return list_find(list->next, addr);
+	}
 }
 
 void bus_write(u16 addr, u8 data)
 {
-	bustree_t *node;
+	list_t *node;
 
-	node = bus_treeFind(&bustree_root, addr);
+	node = list_find(buslist, addr);
 
 	if (node == NULL)
 		FATAL("Invalid bus access (address 0x%04x)", addr);
 
-	if (node->entry == NULL)
-		FATAL("Corrupted tree - entry == NULL");
-
-	node->entry->write(addr - node->entry->begin, data);
+	node->entry.write(addr - node->entry.begin, data);
 }
 
 u8 bus_read(u16 addr)
 {
-	bustree_t *node;
+	list_t *node;
 
-	node = bus_treeFind(&bustree_root, addr);
+	node = list_find(buslist, addr);
 
 	if (node == NULL)
 		FATAL("Invalid bus access (address 0x%04x)", addr);
 
-	if (node->entry == NULL)
-		FATAL("Corrupted tree - entry == NULL");
-
-	return node->entry->read(addr - node->entry->begin);
+	return node->entry.read(addr - node->entry.begin);
 }
 
 void bus_register(busentry_t entry)
 {
-	busentry_t *newEntry;
+	list_t *node;
 
-	if ((newEntry = malloc(sizeof(busentry_t))) == NULL)
+	if ((node = malloc(sizeof(list_t))) == NULL)
 		FATAL("Out of memory!");
 
-	memcpy(newEntry, &entry, sizeof(*newEntry));
+	node->entry = entry;
 
-	bus_treeAdd(&bustree_root, newEntry);
-}
-
-void bus_cleanup(void)
-{
-	bus_treeCleanup(&bustree_root);
+	list_add(&buslist, node);
 }
