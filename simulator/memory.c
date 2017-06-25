@@ -1,5 +1,7 @@
+#include <stdlib.h>
 #include "memory.h"
 #include "bus.h"
+#include "error.h"
 
 struct {
 	u8 *low;
