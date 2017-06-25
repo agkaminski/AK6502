@@ -121,6 +121,7 @@ static void *core_thread(void *arg)
 
 			case STATE_NORMAL:
 				core_normal(&core_global.cpu, &core_global.cycles);
+				core_global.step = 0;
 				break;
 
 			default:
