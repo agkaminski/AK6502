@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 
 	while (1) {
 		core_step();
-		thread_sleep(1000);
+		thread_sleep(1000000);
 	}
 
 	return 0;
