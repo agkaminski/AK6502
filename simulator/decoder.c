@@ -109,7 +109,7 @@ opinfo_t decode(u8 opcode)
 	info = decoder_table[opcode];
 	
 	if (info.opcode == NOP && opcode != 0xea)
-		WARN("Invalid instruction 0x%02x interpreted as NOP");
+		WARN("Invalid instruction 0x%02x interpreted as NOP", opcode);
 	
 	DEBUG("Decoded 0x%02x as %s", opcode, opcode_string[info.opcode]);
 	
