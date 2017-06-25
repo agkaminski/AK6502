@@ -15,7 +15,7 @@
 #define FATAL(msg, ...) do { \
 		fprintf(stderr, RED "[FATAL] [%s:%d] (%s): ", __FILE__, __LINE__, __func__); \
 		fprintf(stderr, msg, ##__VA_ARGS__); \
-		fprintf(stderr, "Press Any Key to Exit...\n"); \
+		fprintf(stderr, "\nPress Any Key to Exit...\n" RESET); \
 		getchar(); \
 		exit(1); \
 	} while (0)
