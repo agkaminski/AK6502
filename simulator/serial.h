@@ -3,4 +3,6 @@
 
 #include "types.h"
 
+void serial_init(void);
+
 #endif

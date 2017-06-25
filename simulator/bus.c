@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bus.h"
 #include "error.h"
 
@@ -79,7 +80,7 @@ static void bus_treeCleanup(bustree_t *root)
 	free(root->entry);
 
 	if (root != &bustree_root)
-		free(root)
+		free(root);
 }
 
 static bustree_t *bus_treeFind(bustree_t *root, u16 addr)
@@ -88,7 +89,7 @@ static bustree_t *bus_treeFind(bustree_t *root, u16 addr)
 		return NULL;
 
 	if (root->entry->begin >= addr && root->entry->end <= addr)
-		return root->entry;
+		return root;
 
 	if (root->entry->end > addr)
 		return bus_treeFind(root->left, addr);

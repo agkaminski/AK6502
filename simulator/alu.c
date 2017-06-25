@@ -12,7 +12,7 @@ void alu_flags(u16 result, u8 *flags, u8 mask)
 	}
 
 	if (mask & flag_zero) {
-		if (result & 0xff == 0)
+		if ((result & 0xff) == 0)
 			*flags |= flag_zero;
 		else
 			*flags &= ~flag_zero;
@@ -35,7 +35,7 @@ u8 alu_add(u8 a, u8 b, u8 *flags)
 	if (*flags & flag_carry)
 		++result;
 
-	if (flags & flag_bcd) {
+	if (*flags & flag_bcd) {
 		if ((a & 0xf) + (b & 0xf) > 9)
 			result += 0x06;
 
@@ -46,7 +46,7 @@ u8 alu_add(u8 a, u8 b, u8 *flags)
 	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 
 	if ((a ^ result) & (b ^ result) & 0x80)
-		*flags |= flag_ovfl;
+		*flags |= flag_ovrf;
 
 	return result & 0xff;
 }
@@ -60,7 +60,7 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 	if (!(*flags & flag_carry))
 		++result;
 
-	if (flags & flag_bcd) {
+	if (*flags & flag_bcd) {
 		if ((a & 0xf) + (b & 0xf) > 9)
 			result += 0x06;
 
@@ -71,7 +71,7 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 
 	if ((a ^ result) & (b ^ result) & 0x80)
-		*flags |= flag_ovfl;
+		*flags |= flag_ovrf;
 
 	return result & 0xff;
 }
@@ -137,15 +137,15 @@ u8 alu_rol(u8 a, u8 b, u8 *flags)
 
 	result = a << 1;
 
-	if (flags & flag_carry)
+	if (*flags & flag_carry)
 		result |= 1;
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
 	if (a & 0x80)
-		flags |= flag_carry;
+		*flags |= flag_carry;
 	else
-		flags &= ~flag_carry;
+		*flags &= ~flag_carry;
 
 	return result;
 }
@@ -156,15 +156,15 @@ u8 alu_ror(u8 a, u8 b, u8 *flags)
 
 	result = a >> 1;
 
-	if (flags & flag_carry)
+	if (*flags & flag_carry)
 		result |= 0x80;
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
 	if (a & 0x80)
-		flags |= flag_carry;
+		*flags |= flag_carry;
 	else
-		flags &= ~flag_carry;
+		*flags &= ~flag_carry;
 
 	return result;
 }
@@ -200,9 +200,9 @@ u8 alu_bit(u8 a, u8 b, u8 *flags)
 	alu_flags(result, flags, flag_sign | flag_zero);
 
 	if (result & 0x40)
-		flags |= flag_ovfl;
+		*flags |= flag_ovrf;
 	else
-		flags &= ~flag_ovfl;
+		*flags &= ~flag_ovrf;
 
 	return result;
 }

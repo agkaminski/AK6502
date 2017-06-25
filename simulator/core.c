@@ -18,7 +18,6 @@ struct {
 	int rst_state;
 	int step;
 	int run;
-	int end;
 
 	mutex_t mutex;
 	cond_t cond;
@@ -26,17 +25,17 @@ struct {
 
 enum { STATE_STALL, STATE_NORMAL, STATE_NMI, STATE_IRQ, STATE_RST, STATE_END };
 
-static core_reset(cpustate_t *cpu, cycles_t *cycles)
+static void core_reset(cpustate_t *cpu, cycles_t *cycles)
 {
 	exec_rst(cpu, cycles);
 }
 
-static core_nmi(cpustate_t *cpu, cycles_t *cycles)
+static void core_nmi(cpustate_t *cpu, cycles_t *cycles)
 {
 	exec_nmi(cpu, cycles);
 }
 
-static core_irq(cpustate_t *cpu, cycles_t *cycles)
+static void core_irq(cpustate_t *cpu, cycles_t *cycles)
 {
 	exec_irq(cpu, cycles);
 }
@@ -48,13 +47,13 @@ static void core_normal(cpustate_t *cpu, cycles_t *cycles)
 	u8 args[2];
 
 	instruction = decode(core_nextpc(cpu));
-	argtype = addrmode_getArgs(cpu, args, instruction.mode, &cycles);
-	exec_execute(cpu, instruction.opcode, argtype, args, &cycles);
+	argtype = addrmode_getArgs(cpu, args, instruction.mode, cycles);
+	exec_execute(cpu, instruction.opcode, argtype, args, cycles);
 
 	*cycles += 1;
 }
 
-static void core_thread(void *arg)
+static void *core_thread(void *arg)
 {
 	cycles_t cycles;
 	int lastNmi;
@@ -85,10 +84,6 @@ static void core_thread(void *arg)
 			}
 			else if (core_global.step != 0) {
 				core_global.state = STATE_NORMAL;
-				break;
-			}
-			else if (core_global.end != 0) {
-				core_global.state = STATE_END;
 				break;
 			}
 			else {
@@ -138,6 +133,8 @@ static void core_thread(void *arg)
 
 		thread_sleep(TIME_PER_CYCLE * cycles);
 	}
+
+	return NULL;
 }
 
 
@@ -204,14 +201,6 @@ void core_setMode(coremode_t mode)
 	unlock(&core_global.mutex);
 }
 
-void core_kill(void)
-{
-	lock(&core_global.mutex);
-	core_global.end = 1;
-	thread_signal(&core_global.cond);
-	unlock(&core_global.mutex);
-}
-
 int core_step(void)
 {
 	lock(&core_global.mutex);
@@ -234,7 +223,6 @@ int core_init(thread_t *thread)
 	core_global.rst_state = 1;
 	core_global.step = 0;
 	core_global.run = 0;
-	core_global.end = 0;
 
 	mutex_init(&core_global.mutex);
 	thread_condInit(&core_global.cond);

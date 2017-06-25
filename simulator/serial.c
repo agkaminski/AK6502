@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <unistd.h>
 #include "serial.h"
 #include "bus.h"
@@ -22,51 +23,14 @@ struct {
 static void serial_pipeWrite(u8 data)
 {
 	//TODO
+	putchar(data);
 }
 
 static u8 serial_pipeRead(void)
 {
 	//TODO
-}
 
-static void serial_write(u16 offset, u8 data)
-{
-	switch (offset) {
-		case 0:
-			serial_pipeWrite(data);
-			break;
-
-		case 1:
-			WARN("Write at offset 1 takes no effect");
-			break;
-
-		default:
-			FATAL("Invalid offset - bug in bus control");
-			break;
-	}
-}
-
-static u8 serial_read(u16 offset)
-{
-	u8 data;
-
-	switch (offset) {
-		case 0:
-			data = serial_pop();
-			break;
-
-		case 1:
-			lock(&serial_global.mutex);
-			data = !!serial_isEmpty();
-			unlock(&serial_global.mutex);
-			break;
-
-		default:
-			FATAL("Invalid offset - bug in bus control");
-			break;
-	}
-
-	return data;
+	return getchar();
 }
 
 static int serial_isEmpty(void)
@@ -111,9 +75,51 @@ static u8 serial_pop(void)
 	data = serial_global.fifo[serial_global.rpos];
 	serial_global.rpos = (serial_global.rpos + 1) % sizeof(serial_global.fifo);
 	unlock(&serial_global.mutex);
+
+	return data;
 }
 
-static void serial_thread(void *arg)
+static void serial_write(u16 offset, u8 data)
+{
+	switch (offset) {
+		case 0:
+			serial_pipeWrite(data);
+			break;
+
+		case 1:
+			WARN("Write at offset 1 takes no effect");
+			break;
+
+		default:
+			FATAL("Invalid offset - bug in bus control");
+			break;
+	}
+}
+
+static u8 serial_read(u16 offset)
+{
+	u8 data = 0;
+
+	switch (offset) {
+		case 0:
+			data = serial_pop();
+			break;
+
+		case 1:
+			lock(&serial_global.mutex);
+			data = !!serial_isEmpty();
+			unlock(&serial_global.mutex);
+			break;
+
+		default:
+			FATAL("Invalid offset - bug in bus control");
+			break;
+	}
+
+	return data;
+}
+
+static void *serial_thread(void *arg)
 {
 	u8 data;
 
@@ -121,6 +127,8 @@ static void serial_thread(void *arg)
 		data = serial_pipeRead();
 		serial_push(data);
 	}
+
+	return NULL;
 }
 
 void serial_init(void)

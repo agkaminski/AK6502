@@ -145,8 +145,8 @@ static argtype_t modeRelative(cpustate_t *cpu, u8 *args, cycles_t *cycles)
 	addr = cpu->pc;
 	addr += rel;
 
-	arg[0] = addr & 0xff;
-	arg[1] = (addr >> 8) & 0xff;
+	args[0] = addr & 0xff;
+	args[1] = (addr >> 8) & 0xff;
 
 	DEBUG("Relative mode, args: 0x%02x%02x = pc + rel: 0x%02x", args[1], args[0], rel);
 

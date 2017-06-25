@@ -10,6 +10,8 @@
 #define RST_VECTOR 0xfffc
 #define NMI_VECTOR 0xfffa
 
+typedef void (*exec_func_t)(cpustate_t*, argtype_t, u8*, cycles_t*);
+
 static void exec_push(cpustate_t *cpu, u8 data)
 {
 	u16 addr;
@@ -404,7 +406,7 @@ static void exec_dec(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_dex(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->x = alu_dec(cpu->x, 0, flags);
+	cpu->x = alu_dec(cpu->x, 0, &cpu->flags);
 
 	DEBUG("Performing DEX, result 0x%02x", cpu->x);
 
@@ -413,7 +415,7 @@ static void exec_dex(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_dey(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->y = alu_dec(cpu->y, 0, flags);
+	cpu->y = alu_dec(cpu->y, 0, &cpu->flags);
 
 	DEBUG("Performing DEY, result 0x%02x", cpu->y);
 
@@ -471,7 +473,7 @@ static void exec_inc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_inx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->x = alu_inc(cpu->x, 0, flags);
+	cpu->x = alu_inc(cpu->x, 0, &cpu->flags);
 
 	DEBUG("Performing INX, result 0x%02x", cpu->x);
 
@@ -480,7 +482,7 @@ static void exec_inx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_iny(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->y = alu_inc(cpu->y, 0, flags);
+	cpu->y = alu_inc(cpu->y, 0, &cpu->flags);
 
 	DEBUG("Performing INY, result 0x%02x", cpu->y);
 
@@ -535,7 +537,7 @@ static void exec_lda(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	DEBUG("Performing LDY of 0x%02x", arg);
 
-	cpu->a = alu_load(arg, 0, flags);
+	cpu->a = alu_load(arg, 0, &cpu->flags);
 }
 
 static void exec_ldx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -555,7 +557,7 @@ static void exec_ldx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	DEBUG("Performing LDY of 0x%02x", arg);
 
-	cpu->x = alu_load(arg, 0, flags);
+	cpu->x = alu_load(arg, 0, &cpu->flags);
 }
 
 static void exec_ldy(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -575,7 +577,7 @@ static void exec_ldy(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	DEBUG("Performing LDY of 0x%02x", arg);
 
-	cpu->y = alu_load(arg, 0, flags);
+	cpu->y = alu_load(arg, 0, &cpu->flags);
 }
 
 static void exec_lsr(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -627,7 +629,7 @@ static void exec_ora(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		*cycles += 1;
 	}
 
-	cpu->a = alu_ora(cpu->a, arg, &cpu->flags);
+	cpu->a = alu_or(cpu->a, arg, &cpu->flags);
 
 	DEBUG("Performing ORA 0x%02x, Acc, result 0x%02x", arg, cpu->a);
 }
@@ -913,7 +915,7 @@ static void exec_tya(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 	*cycles += 1;
 }
 
-static const void (*exec_instr)(cpustate_t*, argtype_t, u8*, cycles_t*)[] = {
+static const exec_func_t exec_instr[] = {
 	exec_adc, exec_and, exec_asl, exec_bcc, exec_bcs, exec_beq, exec_bit, exec_bmi,
 	exec_bne, exec_bpl, exec_brk, exec_bvc, exec_bvs, exec_clc, exec_cld, exec_cli,
 	exec_clv, exec_cmp, exec_cpx, exec_cpy, exec_dec, exec_dex, exec_dey, exec_eor,
@@ -982,6 +984,7 @@ void exec_rst(cpustate_t *cpu, cycles_t *cycles)
 
 	cpu->a = 0;
 	cpu->x = 0;
+	cpu->y = 0;
 	cpu->flags = flag_one;
 	cpu->sp = 0xff;
 

@@ -2,6 +2,8 @@
 #define _EXEC_H_
 
 #include "types.h"
+#include "decoder.h"
+#include "addrmode.h"
 
 void exec_execute(cpustate_t *cpu, opcode_t instruction, argtype_t argtype, u8 *args, cycles_t *cycles);
 
