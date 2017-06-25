@@ -106,14 +106,17 @@ static void *core_thread(void *arg)
 		switch(core_global.state) {
 			case STATE_RST:
 				core_reset(&core_global.cpu, &core_global.cycles);
+				core_global.rst_state = 0;
 				break;
 
 			case STATE_NMI:
 				core_nmi(&core_global.cpu, &core_global.cycles);
+				core_global.nmi_state = 0;
 				break;
 
 			case STATE_IRQ:
 				core_irq(&core_global.cpu, &core_global.cycles);
+				core_global.irq_state = 0;
 				break;
 
 			case STATE_NORMAL:
