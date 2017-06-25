@@ -114,18 +114,25 @@ void bus_write(u16 addr, u8 data)
 		FATAL("Invalid bus access (address 0x%04x)", addr);
 
 	node->entry.write(addr - node->entry.begin, data);
+
+	DEBUG("Wrote 0x%02x to 0x%04x", data, addr);
 }
 
 u8 bus_read(u16 addr)
 {
 	list_t *node;
+	u8 data;
 
 	node = list_find(buslist, addr);
 
 	if (node == NULL)
 		FATAL("Invalid bus access (address 0x%04x)", addr);
 
-	return node->entry.read(addr - node->entry.begin);
+	data = node->entry.read(addr - node->entry.begin);
+
+	DEBUG("Read 0x%02x from 0x%04x", data, addr);
+
+	return data;
 }
 
 void bus_register(busentry_t entry)

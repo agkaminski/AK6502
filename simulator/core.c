@@ -23,7 +23,7 @@ struct {
 	cond_t cond;
 } core_global;
 
-enum { STATE_STALL, STATE_NORMAL, STATE_NMI, STATE_IRQ, STATE_RST, STATE_END };
+enum { STATE_IDLE, STATE_NORMAL, STATE_NMI, STATE_IRQ, STATE_RST, STATE_END };
 
 static void core_reset(cpustate_t *cpu, cycles_t *cycles)
 {
@@ -87,7 +87,7 @@ static void *core_thread(void *arg)
 				break;
 			}
 			else {
-				core_global.state = STATE_STALL;
+				core_global.state = STATE_IDLE;
 			}
 
 			thread_wait(&core_global.cond, &core_global.mutex);
@@ -220,11 +220,11 @@ int core_step(void)
 
 int core_init(thread_t *thread)
 {
-	core_global.state = STATE_RST;
+	core_global.state = STATE_IDLE;
 	core_global.cycles = 0;
 	core_global.irq_state = 0;
 	core_global.nmi_state = 0;
-	core_global.rst_state = 1;
+	core_global.rst_state = 0;
 	core_global.step = 0;
 	core_global.run = 0;
 
