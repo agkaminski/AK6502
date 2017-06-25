@@ -1,5 +1,8 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "serial.h"
 #include "bus.h"
 #include "error.h"
@@ -8,10 +11,9 @@
 #define SERIAL_BASE 0xe000
 
 struct {
-	int infd;
-	int outfd;
+	int ptyfd;
 
-	u8 fifo[32];
+	u8 fifo[256];
 	int rpos;
 	int wpos;
 
@@ -19,19 +21,6 @@ struct {
 	mutex_t mutex;
 	cond_t cond;
 } serial_global;
-
-static void serial_pipeWrite(u8 data)
-{
-	//TODO
-	putchar(data);
-}
-
-static u8 serial_pipeRead(void)
-{
-	//TODO
-
-	return getchar();
-}
 
 static int serial_isEmpty(void)
 {
@@ -83,7 +72,8 @@ static void serial_write(u16 offset, u8 data)
 {
 	switch (offset) {
 		case 0:
-			serial_pipeWrite(data);
+			write(serial_global.ptyfd, &data, sizeof(data));
+			DEBUG("Wrote '%c' to serial", data);
 			break;
 
 		case 1:
@@ -124,7 +114,8 @@ static void *serial_thread(void *arg)
 	u8 data;
 
 	while (1) {
-		data = serial_pipeRead();
+		read(serial_global.ptyfd, &data, sizeof(data));
+		DEBUG("Read '%c' from serial", data);
 		serial_push(data);
 	}
 
@@ -135,7 +126,14 @@ void serial_init(void)
 {
 	busentry_t entry;
 
-	//TODO PIPES
+	serial_global.ptyfd = getpt();
+	if (serial_global.ptyfd < 0)
+		FATAL("Could not create ptty");
+
+	if (grantpt(serial_global.ptyfd) < 0 || unlockpt(serial_global.ptyfd) < 0)
+		FATAL("ptty error");
+
+	WARN("Serial communication is available on %s", ptsname(serial_global.ptyfd));
 
 	serial_global.rpos = 0;
 	serial_global.wpos = 0;
