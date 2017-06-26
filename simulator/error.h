@@ -33,9 +33,9 @@
 	} while (0)
 
 #define INFO(msg, ...) do { \
-        printf("[INFO] "); \
-        printf(msg, ##__VA__ARGS__); \
-        printf("\n"); \
-    } while (0)
+		printf("[INFO] "); \
+		printf(msg, ##__VA_ARGS__); \
+		printf("\n"); \
+	} while (0)
 
 #endif

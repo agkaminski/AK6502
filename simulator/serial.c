@@ -133,8 +133,6 @@ void serial_init(void)
 	if (grantpt(serial_global.ptyfd) < 0 || unlockpt(serial_global.ptyfd) < 0)
 		FATAL("ptty error");
 
-	WARN("Serial communication is available on %s", ptsname(serial_global.ptyfd));
-
 	serial_global.rpos = 0;
 	serial_global.wpos = 0;
 
@@ -146,7 +144,9 @@ void serial_init(void)
 	entry.read = serial_read;
 	entry.write = serial_write;
 
+	INFO("Adding UART driver at address 0x%04x - 0x%04x", entry.begin, entry.end);
 	bus_register(entry);
 
+	INFO("Serial communication is available on %s", ptsname(serial_global.ptyfd));
 	thread_create(&serial_global.thread, serial_thread, NULL);
 }

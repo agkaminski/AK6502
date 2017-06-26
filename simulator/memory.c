@@ -43,6 +43,7 @@ void memory_init(void)
 	entry.read = memory_low_read;
 	entry.write = memory_low_write;
 
+	INFO("Adding RAM at address 0x%04x (size 0x%04x bytes)", entry.begin, entry.end - entry.begin);
 	bus_register(entry);
 
 	entry.begin = 0xf000;
@@ -50,5 +51,6 @@ void memory_init(void)
 	entry.read = memory_high_read;
 	entry.write = memory_high_write;
 
+	INFO("Adding RAM at address 0x%04x (size 0x%04x bytes)", entry.begin, entry.end - entry.begin);
 	bus_register(entry);
 }
