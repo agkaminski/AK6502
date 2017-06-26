@@ -12,8 +12,6 @@ error.h
 exec.c
 exec.h
 flags.h
-io.c
-io.h
 main.c
 memory.c
 memory.h
