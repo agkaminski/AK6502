@@ -32,4 +32,10 @@
 		fprintf(stderr, "\n" RESET); \
 	} while (0)
 
+#define INFO(msg, ...) do { \
+        printf("[INFO] "); \
+        printf(msg, ##__VA__ARGS__); \
+        printf("\n"); \
+    } while (0)
+
 #endif

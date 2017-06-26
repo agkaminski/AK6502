@@ -9,7 +9,7 @@ OBJ = addrmode.o alu.o bus.o core.o decoder.o exec.o main.o memory.o serial.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(OUT): $(OBJ)
-	gcc -o $@ $^ $(CFLAGS) $(LIBS)
+	gcc -o $@ $^ $(LIBS)
 
 .PHONY: clean
 
