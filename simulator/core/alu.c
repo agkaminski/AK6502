@@ -1,5 +1,4 @@
 #include "alu.h"
-#include "types.h"
 #include "flags.h"
 
 void alu_flags(u16 result, u8 *flags, u8 mask)

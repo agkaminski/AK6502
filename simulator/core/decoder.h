@@ -1,7 +1,7 @@
 #ifndef _DECODER_H_
 #define _DECODER_H_
 
-#include "types.h"
+#include "common/types.h"
 
 typedef enum {
 	ADC, AND, ASL, BCC, BCS, BEQ, BIT, BMI,

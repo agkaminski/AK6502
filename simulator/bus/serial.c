@@ -3,10 +3,10 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "serial.h"
+#include "common/error.h"
+#include "common/threads.h"
 #include "bus.h"
-#include "error.h"
-#include "threads.h"
+#include "serial.h"
 
 #define SERIAL_BASE 0xe000
 

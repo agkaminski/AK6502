@@ -1,10 +1,10 @@
 #include <stdlib.h>
-#include "error.h"
+#include "common/error.h"
+#include "bus/bus.h"
 #include "core.h"
 #include "addrmode.h"
 #include "decoder.h"
 #include "exec.h"
-#include "bus.h"
 #include "flags.h"
 
 void core_nmi(cpustate_t *cpu, cycles_t *cycles)

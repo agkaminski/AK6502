@@ -1,7 +1,7 @@
 #ifndef _EXEC_H_
 #define _EXEC_H_
 
-#include "types.h"
+#include "common/types.h"
 #include "decoder.h"
 #include "addrmode.h"
 

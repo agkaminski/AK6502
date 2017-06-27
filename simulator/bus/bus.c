@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common/error.h"
 #include "bus.h"
-#include "error.h"
 
 typedef struct list {
 	struct list *prev;

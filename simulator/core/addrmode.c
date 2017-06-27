@@ -1,7 +1,7 @@
+#include "common/error.h"
+#include "bus/bus.h"
 #include "addrmode.h"
-#include "error.h"
 #include "decoder.h"
-#include "bus.h"
 #include "core.h"
 
 static argtype_t modeAcc(cpustate_t *cpu, u8 *args, cycles_t *cycles)

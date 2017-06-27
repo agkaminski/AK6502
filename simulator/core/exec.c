@@ -1,10 +1,8 @@
+#include "common/error.h"
+#include "bus/bus.h"
 #include "exec.h"
-#include "error.h"
 #include "alu.h"
-#include "decoder.h"
 #include "flags.h"
-#include "bus.h"
-#include "addrmode.h"
 
 #define IRQ_VECTOR 0xfffe
 #define RST_VECTOR 0xfffc

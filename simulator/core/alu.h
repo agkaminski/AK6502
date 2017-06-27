@@ -1,7 +1,7 @@
 #ifndef _ALU_H_
 #define _ALU_H_
 
-#include "types.h"
+#include "common/types.h"
 
 void alu_flags(u16 result, u8 *flags, u8 mask);
 

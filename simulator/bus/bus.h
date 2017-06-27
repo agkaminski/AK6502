@@ -1,7 +1,7 @@
 #ifndef _BUS_H_
 #define _BUS_H_
 
-#include "types.h"
+#include "common/types.h"
 
 typedef struct {
 	u16 begin;

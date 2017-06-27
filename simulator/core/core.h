@@ -1,7 +1,7 @@
 #ifndef _CORE_H_
 #define _CORE_H_
 
-#include "types.h"
+#include "common/types.h"
 
 void core_nmi(cpustate_t *cpu, cycles_t *cycles);
 

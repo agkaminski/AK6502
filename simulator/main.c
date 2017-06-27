@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "error.h"
-#include "core.h"
-#include "serial.h"
-#include "memory.h"
+#include "common/error.h"
+#include "core/core.h"
+#include "bus/serial.h"
+#include "bus/memory.h"
 
 int main(int argc, char *argv[])
 {

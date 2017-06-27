@@ -1,5 +1,5 @@
+#include "common/error.h"
 #include "decoder.h"
-#include "error.h"
 
 static const opinfo_t decoder_table[] = {
 	{BRK, mode_imp}, {ORA, mode_inx}, {NOP, mode_imp}, {NOP, mode_imp},
