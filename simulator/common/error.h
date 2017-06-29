@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#define NDEBUG 0
+//#define NDEBUG
 
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
@@ -25,17 +25,21 @@
 		fprintf(stderr, msg, ##__VA_ARGS__); \
 		fprintf(stderr, "\n" RESET); \
 	} while (0)
-	
-#define DEBUG(msg, ...) do { \
-		fprintf(stderr, GRN "[DEBUG] [%s:%d] (%s): ", __FILE__, __LINE__, __func__); \
-		fprintf(stderr, msg, ##__VA_ARGS__); \
-		fprintf(stderr, "\n" RESET); \
-	} while (0)
 
 #define INFO(msg, ...) do { \
 		printf("[INFO] "); \
 		printf(msg, ##__VA_ARGS__); \
 		printf("\n"); \
 	} while (0)
+
+#ifndef NDEBUG
+#define DEBUG(msg, ...) do { \
+		fprintf(stderr, GRN "[DEBUG] [%s:%d] (%s): ", __FILE__, __LINE__, __func__); \
+		fprintf(stderr, msg, ##__VA_ARGS__); \
+		fprintf(stderr, "\n" RESET); \
+	} while (0)
+#else
+#define DEBUG(msg, ...)
+#endif
 
 #endif

@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include "binary.h"
-#include "error.h"
+#include "common/error.h"
 
 int binary_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 {
 	int count = offset, ret;
-	int fd = open(path, O_RDONLY | O_BINARY);
+	int fd = open(path, O_RDONLY);
 
 	if (fd < 0) {
 		WARN("Could not open file %s", path);

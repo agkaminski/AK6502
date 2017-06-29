@@ -70,9 +70,17 @@ static u8 serial_pop(void)
 
 static void serial_write(u16 offset, u8 data)
 {
+	int ret;
+
 	switch (offset) {
 		case 0:
-			write(serial_global.ptyfd, &data, sizeof(data));
+			do {
+				ret = write(serial_global.ptyfd, &data, sizeof(data));
+			} while (ret == 0);
+
+			if (ret < 0)
+				FATAL("IO error");
+
 			DEBUG("Wrote '%c' to serial", data);
 			break;
 
@@ -111,10 +119,17 @@ static u8 serial_read(u16 offset)
 
 static void *serial_thread(void *arg)
 {
+	int ret;
 	u8 data;
 
 	while (1) {
-		read(serial_global.ptyfd, &data, sizeof(data));
+		do {
+			ret = read(serial_global.ptyfd, &data, sizeof(data));
+		} while (ret == 0);
+
+		if (ret < 0)
+			FATAL("IO error");
+
 		DEBUG("Read '%c' from serial", data);
 		serial_push(data);
 	}

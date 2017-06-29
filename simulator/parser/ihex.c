@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include "binary.h"
-#include "error.h"
+#include <unistd.h>
+#include "ihex.h"
+#include "common/error.h"
 
 typedef struct {
 	u16 addr;
@@ -43,6 +44,8 @@ static int ihex_nextLine(int fd, char *buff, size_t bufflen)
 	}
 
 	*(buff + count) = '\0';
+
+	DEBUG("Read line %s", buff);
 
 	return count;
 }
@@ -100,17 +103,18 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 
 	chksum = data->size;
 
-	if (size + 12 > bufflen || size > datalen) {
-		WARN("Buffer can't hold this ihex line (data size %u)", size);
+	if (data->size + 12 > bufflen || data->size > datalen) {
+		WARN("Buffer can't hold this ihex line (data size %u)", data->size);
 		return -1;
 	}
 
-	if (ihex_hextobyte(buff, &data->addr)) {
+	if (ihex_hextobyte(buff, &tmp)) {
 		WARN("Corrupted ihex file, not a hex value");
 		return -1;
 	}
 
-	chksum += data->addr;
+	data->addr = tmp;
+	chksum += tmp;
 
 	if (ihex_hextobyte(buff, &tmp)) {
 		WARN("Corrupted ihex file, not a hex value");
@@ -125,7 +129,7 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 		return -1;
 	}
 
-	chksum += type;
+	chksum += data->type;
 
 	if (data->type != 0 && data->type != 1) {
 		WARN("Unsupported entry type: %u", data->type);
@@ -153,6 +157,17 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 		return -1;
 	}
 
+#ifndef NDEBUG
+	DEBUG("iHEX info: size %u, addr %u, type %u, data:", data->size, data->addr, data->type);
+	for (i = 0; i < data->size; ++i) {
+		if (!(i % 8))
+			fprintf(stderr, "\n\t");
+
+		fprintf(stderr, "0x%02x ", data->data[i]);
+	}
+	fprintf(stderr, "\n");
+#endif
+
 	return 0;
 }
 
@@ -163,7 +178,9 @@ int ihex_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 	u8 data_buff[256 + sizeof(ihexline_t)];
 	int fd, ret, count = 0;
 
-	if ((fd = fopen(path, O_RDONLY)) < 0) {
+	data = (ihexline_t *)data_buff;
+
+	if ((fd = open(path, O_RDONLY)) < 0) {
 		WARN("Could not open file %s", path);
 		return -1;
 	}
