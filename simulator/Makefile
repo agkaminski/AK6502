@@ -5,7 +5,7 @@ LIBS = -lpthread
 OUT = sim
 OBJ =  core/addrmode.o core/alu.o core/core.o core/decoder.o core/exec.o
 OBJ += bus/bus.o bus/memory.o bus/serial.o
-OBJ += parser/binary.o parser/ihex.o parser/srec.o
+OBJ += parser/binary.o parser/ihex.o parser/srec.o parser/parser.o
 OBJ += monitor.o main.o
 
 %.o: %.c

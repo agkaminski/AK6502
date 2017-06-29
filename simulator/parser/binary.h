@@ -3,4 +3,6 @@
 
 #include "common/types.h"
 
+int binary_parse(const char *path, u16 offset, u8 *buff, size_t bufflen);
+
 #endif

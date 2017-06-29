@@ -26,6 +26,8 @@ parser/binary.c
 parser/binary.h
 parser/ihex.c
 parser/ihex.h
+parser/parser.c
+parser/parser.h
 parser/srec.c
 parser/srec.h
 
