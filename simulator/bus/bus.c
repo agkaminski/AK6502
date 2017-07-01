@@ -127,7 +127,7 @@ u8 bus_read(u16 addr)
 	node = list_find(buslist, addr);
 
 	if (node == NULL) {
-		FATAL("Invalid bus access (address 0x%04x)", addr);
+		WARN("Invalid bus access (address 0x%04x)", addr);
 		data = 0xff;
 	}
 	else {
