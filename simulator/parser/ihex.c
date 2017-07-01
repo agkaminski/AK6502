@@ -135,11 +135,6 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 	buff += 2;
 	chksum += data->type;
 
-	if (data->type != 0 && data->type != 1) {
-		WARN("Unsupported entry type: %u", data->type);
-		return -1;
-	}
-
 	for (i = 0; i < data->size; ++i) {
 		if (ihex_hextobyte(buff, &data->data[i])) {
 			WARN("Corrupted ihex file, not a hex value");
@@ -214,6 +209,11 @@ int ihex_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 		if (data->type == 0x01) {
 			DEBUG("EOF record");
 			break;
+		}
+
+		if (data->type != 0x00) {
+			WARN("Unsupported record type 0x%02x, ignoring", data->type);
+			continue;
 		}
 
 		if (data->addr + data->size + offset > bufflen) {
