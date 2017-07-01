@@ -75,8 +75,6 @@ static int ihex_hextobyte(char *buff, u8 *data)
 
 	*data = (high << 4)  + low;
 
-	DEBUG("Converted 0x%c%c to 0x%02x", buff[0], buff[1], *data);
-
 	return 0;
 }
 
@@ -165,9 +163,9 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 	}
 
 #ifndef NDEBUG
-	DEBUG("iHEX info: size %u, addr %u, type %u, data:", data->size, data->addr, data->type);
+	DEBUG("iHEX info: size 0x%02x, addr 0x%04x, type 0x%02x, data:", data->size, data->addr, data->type);
 	for (i = 0; i < data->size; ++i) {
-		if (!(i % 8)) {
+		if (!(i % 16)) {
 			fprintf(stderr, "\n");
 			fprintf(stderr, "0x%04x", data->addr + i);
 			fprintf(stderr, "\t");
@@ -175,7 +173,7 @@ static int ihex_parseLine(ihexline_t *data, size_t datalen, char *buff, size_t b
 
 		fprintf(stderr, "0x%02x ", data->data[i]);
 	}
-	fprintf(stderr, "\n");
+	fprintf(stderr, "\n\n");
 #endif
 
 	return 0;
@@ -229,7 +227,7 @@ int ihex_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 
 	close(fd);
 
-	DEBUG("Parsed %d line, extracted %d bytes. Done.", linecnt, count);
+	DEBUG("Parsed %d lines, extracted %d bytes. Done.", linecnt, count);
 
 	return count;
 }
