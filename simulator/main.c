@@ -6,11 +6,12 @@
 #include "core/core.h"
 #include "bus/serial.h"
 #include "bus/memory.h"
+#include "monitor.h"
 
 int main(int argc, char *argv[])
 {
 	cpustate_t cpu;
-	cycles_t cycles;
+	cycles_t cycles = 0;
 	u16 offset;
 	u8 *rom = NULL;
 
@@ -48,10 +49,9 @@ int main(int argc, char *argv[])
 	core_reset(&cpu, &cycles);
 	INFO("Ready.");
 
-	while (1) {
-		core_step(&cpu, &cycles);
-		getchar();
-	}
+	monitor(&cpu, &cycles);
+
+	INFO("Ending simulation. CPU took total of %u cycles.", cycles);
 
 	return 0;
 }
