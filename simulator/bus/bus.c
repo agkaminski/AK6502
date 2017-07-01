@@ -84,24 +84,31 @@ static int list_add(list_t **list, list_t *node)
 
 static list_t *list_find(list_t *list, u16 addr)
 {
-	if (list == NULL) {
-		DEBUG("Not found");
-		return NULL;
+	list_t *curr = list;
+
+	while (curr != NULL) {
+		if (curr->entry.begin <= addr && curr->entry.end >= addr) {
+			DEBUG("Found addr 0x%04x in b: 0x%04x e: 0x%04x", addr, curr->entry.begin, curr->entry.end);
+			return curr;
+		}
+
+		curr = curr->prev;
 	}
 
-	if (list->entry.begin <= addr && list->entry.end >= addr) {
-		DEBUG("Found addr 0x%04x in b: 0x%04x e: 0x%04x", addr, list->entry.begin, list->entry.end);
-		return list;
+	curr = list->next;
+
+	while (curr != NULL) {
+		if (curr->entry.begin <= addr && curr->entry.end >= addr) {
+			DEBUG("Found addr 0x%04x in b: 0x%04x e: 0x%04x", addr, curr->entry.begin, curr->entry.end);
+			return curr;
+		}
+
+		curr = curr->next;
 	}
 
-	if (list->entry.begin > addr) {
-		DEBUG("Searching 0x%04x prev (curr b: 0x%04x e: 0x%04x)", addr, list->entry.begin, list->entry.end);
-		return list_find(list->prev, addr);
-	}
-	else {
-		DEBUG("Searching 0x%04x next (curr b: 0x%04x e: 0x%04x)", addr, list->entry.begin, list->entry.end);
-		return list_find(list->next, addr);
-	}
+	DEBUG("Not found");
+
+	return NULL;
 }
 
 void bus_write(u16 addr, u8 data)

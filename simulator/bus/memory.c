@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "common/error.h"
 #include "memory.h"
 #include "bus.h"
@@ -28,7 +29,7 @@ static u8 memory_high_read(u16 offset)
 	return memory_global.high[offset];
 }
 
-void memory_init(void)
+void memory_init(u8 *data)
 {
 	busentry_t entry;
 
@@ -37,6 +38,12 @@ void memory_init(void)
 
 	if ((memory_global.high = malloc(0x1000)) == NULL)
 		FATAL("Out of memory");
+
+	if (data != NULL) {
+		memcpy(memory_global.low, data, 0xe000);
+		memcpy(memory_global.high, &data[0xf000], 0x1000);
+		DEBUG("Initialized RAM");
+	}
 
 	entry.begin = 0x0000;
 	entry.end = 0xdfff;

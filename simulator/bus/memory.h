@@ -3,6 +3,6 @@
 
 #include "common/types.h"
 
-void memory_init(void);
+void memory_init(u8 *data);
 
 #endif
