@@ -175,7 +175,7 @@ static int srec_parseLine(srecline_t *data, size_t datalen, char *buff, size_t b
 	return 0;
 }
 
-int ihex_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
+int srec_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 {
 	srecline_t *data;
 	char line[256 + 12];
