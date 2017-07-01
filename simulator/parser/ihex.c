@@ -216,18 +216,19 @@ int ihex_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 			break;
 		}
 
-		if (data->addr + data->size > bufflen) {
-			data->size = bufflen - data->addr - 1;
+		if (data->addr + data->size + offset > bufflen) {
+			data->size = bufflen - data->addr - offset;
 			WARN("Not writing data above buffer limit");
 		}
 
-		memcpy(buff + data->addr, data->data, data->size);
+		memcpy(buff + data->addr + offset, data->data, data->size);
 		count += data->size;
 	}
 
 	close(fd);
 
 	DEBUG("Parsed %d lines, extracted %d bytes. Done.", linecnt, count);
+	INFO("Read %u bytes from intel hex file %s", count, path);
 
 	return count;
 }
