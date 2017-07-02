@@ -120,6 +120,10 @@ static void exec_bcc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (!(cpu->flags & flag_carry)) {
 		DEBUG("BCC branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -136,6 +140,10 @@ static void exec_bcs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (cpu->flags & flag_carry) {
 		DEBUG("BCS branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -152,6 +160,10 @@ static void exec_beq(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (cpu->flags & flag_zero) {
 		DEBUG("BEQ branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -188,6 +200,10 @@ static void exec_bmi(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (cpu->flags & flag_sign) {
 		DEBUG("BMI branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -204,6 +220,10 @@ static void exec_bne(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (!(cpu->flags & flag_zero)) {
 		DEBUG("BNE branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -220,6 +240,10 @@ static void exec_bpl(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (!(cpu->flags & flag_sign)) {
 		DEBUG("BPL branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -261,6 +285,10 @@ static void exec_bvc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (!(cpu->flags & flag_ovrf)) {
 		DEBUG("BVC branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
@@ -277,6 +305,10 @@ static void exec_bvs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 	if (cpu->flags & flag_ovrf) {
 		DEBUG("BVS branch taken, new pc 0x%04x", addr);
+#ifndef NDEBUG
+		if (addr == cpu->pc - 2)
+			FATAL("Tight loop");
+#endif
 		cpu->pc = addr;
 		*cycles += 1;
 	}
