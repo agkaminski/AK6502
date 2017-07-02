@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "common/error.h"
-#include "core/exec.h"
+#include "core/core.h"
 #include "parser/parser.h"
 #include "bus/serial.h"
 #include "bus/memory.h"
@@ -10,8 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-	cpustate_t cpu;
-	cycles_t cycles = 0;
+	cycles_t cycles;
 	u16 offset;
 	u8 *rom = NULL;
 
@@ -44,13 +43,15 @@ int main(int argc, char *argv[])
 	free(rom);
 
 	serial_init();
+	core_init();
 
 	INFO("Resetting CPU...");
-	exec_rst(&cpu, &cycles);
+	core_rst();
 	INFO("Ready.");
 
-	monitor(&cpu, &cycles);
+	monitor();
 
+	core_getState(NULL, &cycles);
 	INFO("Ending simulation. CPU took total of %u cycles.", cycles);
 
 	return 0;

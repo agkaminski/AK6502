@@ -3,6 +3,6 @@
 
 #include "common/types.h"
 
-void monitor(cpustate_t *cpu, cycles_t *cycles);
+void monitor(void);
 
 #endif

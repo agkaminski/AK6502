@@ -54,7 +54,7 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 {
 	u16 result;
 
-	result = a - b;
+	result = a + ~b;
 
 	if (!(*flags & flag_carry))
 		++result;
@@ -210,7 +210,7 @@ u8 alu_cmp(u8 a, u8 b, u8 *flags)
 {
 	u16 result;
 
-	result = a - b;
+	result = a + ~b + 1;
 
 	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 
