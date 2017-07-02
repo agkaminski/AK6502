@@ -3,7 +3,7 @@
 
 #include "common/types.h"
 
-void alu_flags(u16 result, u8 *flags, u8 mask);
+void alu_flags(u8 result, u8 *flags, u8 mask);
 
 u8 alu_add(u8 a, u8 b, u8 *flags);
 
