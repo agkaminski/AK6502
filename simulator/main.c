@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "common/error.h"
+#include "core/exec.h"
 #include "parser/parser.h"
-#include "core/core.h"
 #include "bus/serial.h"
 #include "bus/memory.h"
 #include "monitor.h"
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 	serial_init();
 
 	INFO("Resetting CPU...");
-	core_reset(&cpu, &cycles);
+	exec_rst(&cpu, &cycles);
 	INFO("Ready.");
 
 	monitor(&cpu, &cycles);
