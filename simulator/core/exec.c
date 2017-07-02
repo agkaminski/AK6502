@@ -123,8 +123,9 @@ static void exec_bcc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BCC branch not taken");
+	else {
+		DEBUG("BCC branch not taken");
+	}
 }
 
 static void exec_bcs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -138,8 +139,9 @@ static void exec_bcs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BCS branch not taken");
+	else {
+		DEBUG("BCS branch not taken");
+	}
 }
 
 static void exec_beq(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -153,8 +155,9 @@ static void exec_beq(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BEQ branch not taken");
+	else {
+		DEBUG("BEQ branch not taken");
+	}
 }
 
 static void exec_bit(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -188,8 +191,9 @@ static void exec_bmi(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BMI branch not taken");
+	else {
+		DEBUG("BMI branch not taken");
+	}
 }
 
 static void exec_bne(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -203,8 +207,9 @@ static void exec_bne(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BNE branch not taken");
+	else {
+		DEBUG("BNE branch not taken");
+	}
 }
 
 static void exec_bpl(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -218,8 +223,9 @@ static void exec_bpl(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BPL branch not taken");
+	else {
+		DEBUG("BPL branch not taken");
+	}
 }
 
 static void exec_brk(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
