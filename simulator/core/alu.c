@@ -210,7 +210,7 @@ u8 alu_cmp(u8 a, u8 b, u8 *flags)
 {
 	u16 result;
 
-	result = a - b + 1;
+	result = a - b;
 
 	alu_flags(result, flags, flag_carry | flag_sign | flag_zero);
 

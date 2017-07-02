@@ -264,8 +264,9 @@ static void exec_bvc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BVC branch not taken");
+	else {
+		DEBUG("BVC branch not taken");
+	}
 }
 
 static void exec_bvs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -279,8 +280,9 @@ static void exec_bvs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		cpu->pc = addr;
 		*cycles += 1;
 	}
-
-	DEBUG("BVS branch not taken");
+	else {
+		DEBUG("BVS branch not taken");
+	}
 }
 
 static void exec_clc(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
@@ -539,7 +541,7 @@ static void exec_lda(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		*cycles += 1;
 	}
 
-	DEBUG("Performing LDY of 0x%02x", arg);
+	DEBUG("Performing LDA of 0x%02x", arg);
 
 	cpu->a = alu_load(arg, 0, &cpu->flags);
 }
@@ -559,7 +561,7 @@ static void exec_ldx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 		*cycles += 1;
 	}
 
-	DEBUG("Performing LDY of 0x%02x", arg);
+	DEBUG("Performing LDX of 0x%02x", arg);
 
 	cpu->x = alu_load(arg, 0, &cpu->flags);
 }
