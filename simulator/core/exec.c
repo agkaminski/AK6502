@@ -901,7 +901,7 @@ static void exec_sty(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_tax(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->x = cpu->a;
+	cpu->x = alu_load(cpu->a, 0, &cpu->flags);
 
 	DEBUG("Executing TAX");
 
@@ -910,7 +910,7 @@ static void exec_tax(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_tay(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->y = cpu->a;
+	cpu->y = alu_load(cpu->a, 0, &cpu->flags);
 
 	DEBUG("Executing TAY");
 
@@ -919,7 +919,7 @@ static void exec_tay(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_tsx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->x = cpu->sp;
+	cpu->x = alu_load(cpu->sp, 0, &cpu->flags);
 
 	DEBUG("Executing TSX");
 
@@ -928,7 +928,7 @@ static void exec_tsx(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_txa(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->a = cpu->x;
+	cpu->a = alu_load(cpu->x, 0, &cpu->flags);
 
 	DEBUG("Executing TXA");
 
@@ -946,7 +946,7 @@ static void exec_txs(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_tya(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->a = cpu->y;
+	cpu->a = alu_load(cpu->y, 0, &cpu->flags);
 
 	DEBUG("Executing TYA");
 
