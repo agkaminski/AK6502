@@ -7,9 +7,11 @@
 #include "core/addrmode.h"
 #include "core/decoder.h"
 #include "core/core.h"
+#include "parser/parser.h"
 #include "monitor.h"
 
-typedef enum { cmd_none, cmd_help, cmd_step, cmd_run, cmd_trig, cmd_cpu, cmd_speed, cmd_quit } cmd_t;
+typedef enum { cmd_none, cmd_help, cmd_step, cmd_run, cmd_trig, cmd_cpu,
+	cmd_speed, cmd_load, cmd_write, cmd_dump, cmd_quit } cmd_t;
 
 static inline int is_separator(char c)
 {
@@ -37,7 +39,7 @@ static int next_word(const char *line, int *pos, char *word, size_t wordsz)
 	}
 
 	memcpy(word, &line[bpos], *pos - bpos);
-	word[*pos] = '\0';
+	word[*pos - bpos] = '\0';
 
 	return 1;
 }
@@ -51,6 +53,9 @@ static void help(void)
 	printf("\t"GRN"c"RESET"pu - show current cpu state\n");
 	printf("\t"GRN"f"RESET"requency - set run mode cpu speed (in Hz)\n");
 	printf("\t"GRN"t"RESET"rigger <type> - cause event (rst, irq, nmi)\n");
+	printf("\t"GRN"l"RESET"oad <path> <offset> - loads content of the file <path> to the memory\n");
+	printf("\t"GRN"w"RESET"rite <offset> [data] - interactive write starting at <offset>\n");
+	printf("\t"GRN"d"RESET"ump <offset> <count> - dumps <count> bytes from memory at <offset>\n");
 
 	printf("\t"GRN"q"RESET"uit - exits simulation\n");
 	printf("\n");
@@ -143,6 +148,123 @@ static void speed(char *freq)
 	core_setSpeed(hz);
 }
 
+static void load(char *line, int pos)
+{
+	char path[32];
+	char buff[32];
+	u8 *mem;
+	u16 offset;
+	int count, i;
+
+	if (!next_word(line, &pos, path, sizeof(path))) {
+		printf("Command load requires argument.\n");
+		return;
+	}
+
+	if (!next_word(line, &pos, buff, sizeof(buff)))
+		offset = 0;
+	else
+		offset = strtol(buff, NULL, 16);
+
+	if ((mem = malloc(65536)) == NULL) {
+		WARN("Out of memory!");
+		return;
+	}
+
+	count = parse_file(path, offset, mem, 65536);
+
+	for (i = 0; i < count; ++i) {
+		if (offset + i > 65535)
+			break;
+		bus_write(offset + i, mem[offset + i]);
+	}
+
+	if (count < 0)
+		printf("Failed to read file %s\n", path);
+	else
+		printf("Read %d bytes.\n", count);
+
+	free(mem);
+}
+
+static void write(char *line, int pos)
+{
+	char buff[32];
+	u16 offset;
+	size_t i = 0;
+
+	if (!next_word(line, &pos, buff, sizeof(buff))) {
+		printf("Command write requires argument.\n");
+		return;
+	}
+	offset = strtol(buff, NULL, 16);
+
+	if (!next_word(line, &pos, buff, sizeof(buff))) {
+		printf("Interactive mode.\n");
+		printf("Enter 'n' to leave data unchanged, 'q' to exit.\n");
+
+		while (1) {
+			if ((size_t)offset + i > 65535)
+				break;
+
+			printf("%04x\t%02x\t", (unsigned int)(offset + i), bus_read(offset + i));
+
+			while (scanf("%2s", buff) != 1);
+
+			while ((buff[3] = getchar()) != EOF && buff[3] != '\n');
+
+			if (buff[0] == 'q')
+				break;
+
+			if (buff[0] == 'n')
+				continue;
+
+			buff[3] = '\0';
+
+			bus_write(offset + i++, strtol(buff, NULL, 16));
+		}
+	}
+	else {
+		do {
+			if ((size_t)offset + i > 65535)
+				break;
+			bus_write(offset + i++, strtol(buff, NULL, 16));
+		} while (next_word(line, &pos, buff, sizeof(buff)));
+	}
+
+	printf("Wrote %u bytes.\n", (unsigned int)i);
+}
+
+static void dump(char *line, int pos)
+{
+	char buff[32];
+	u16 offset;
+	size_t count, i;
+
+	if (!next_word(line, &pos, buff, sizeof(buff))) {
+		printf("Command dump requires 2 arguments.\n");
+		return;
+	}
+	offset = strtol(buff, NULL, 16);
+
+	if (!next_word(line, &pos, buff, sizeof(buff))) {
+		printf("Command dump requires 2 arguments.\n");
+		return;
+	}
+	count = strtol(buff, NULL, 16);
+
+	printf("Dumping %u bytes beggining at address %u...\n", (unsigned int)count, offset);
+
+	for (i = 0; i < count; ++i) {
+		if ((size_t)offset + i > 65535)
+			break;
+		if (!(i % 16))
+			printf("\n%04x\t", (unsigned int)(offset + i));
+		printf(" %02x", bus_read(offset + i));
+	}
+	printf("\n");
+}
+
 static cmd_t decode_cmd(const char *cmd)
 {
 	if (strcmp("h", cmd) == 0 || strcmp("help", cmd) == 0)
@@ -157,6 +279,12 @@ static cmd_t decode_cmd(const char *cmd)
 		return cmd_trig;
 	else if (strcmp("f", cmd) == 0 || strcmp("frequency", cmd) == 0)
 		return cmd_speed;
+	else if (strcmp("l", cmd) == 0 || strcmp("load", cmd) == 0)
+		return cmd_load;
+	else if (strcmp("w", cmd) == 0 || strcmp("write", cmd) == 0)
+		return cmd_write;
+	else if (strcmp("d", cmd) == 0 || strcmp("dump", cmd) == 0)
+		return cmd_dump;
 	else if (strcmp("q", cmd) == 0 || strcmp("quit", cmd) == 0)
 		return cmd_quit;
 
@@ -219,6 +347,19 @@ void monitor(void)
 					printf("Command frequency requires argument.\n");
 				else
 					speed(word);
+				break;
+
+			case cmd_load:
+				load(line, pos);
+				break;
+
+			case cmd_write:
+				write(line, pos);
+				break;
+
+			case cmd_dump:
+				dump(line, pos);
+				break;
 
 			case cmd_quit:
 				break;

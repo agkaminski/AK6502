@@ -49,5 +49,5 @@ int binary_parse(const char *path, u16 offset, u8 *buff, size_t bufflen)
 
 	INFO("Read %u bytes from binary file %s", count - offset, path);
 
-	return count;
+	return count - offset;
 }
