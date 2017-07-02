@@ -697,7 +697,7 @@ static void exec_php(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cyc
 
 static void exec_pla(cpustate_t *cpu, argtype_t argtype, u8 *args, cycles_t *cycles)
 {
-	cpu->a = exec_pop(cpu);
+	cpu->a = alu_load(exec_pop(cpu), 0, &cpu->flags);
 
 	DEBUG("Performing PLA");
 
