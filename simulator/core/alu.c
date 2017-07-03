@@ -21,71 +21,78 @@ void alu_flags(u8 result, u8 *flags, u8 mask)
 
 u8 alu_add(u8 a, u8 b, u8 *flags)
 {
-	u8 result;
+	u16 result, ai, bi;
+	u8 carry_in = !!(*flags & flag_carry);
 
-	result = a + b;
+	ai = (u16)a;
+	bi = (u16)b;
+
+	result = ai + bi;
 
 	if (*flags & flag_carry)
 		++result;
 
 	if (*flags & flag_bcd) {
-		if ((a & 0xf) + (b & 0xf) > 9)
+		if ((ai & 0xf) + (bi & 0xf) > 9)
 			result += 0x06;
 
 		if ((result >> 4) > 9)
 			result += 0x60;
 	}
 
-	if (result < a || result < b)
+	if (result < ai || result < bi || (result & 0xff00) != 0)
 		*flags |= flag_carry;
 	else
 		*flags &= ~flag_carry;
 
-	alu_flags(result, flags, flag_sign | flag_zero);
+	alu_flags(result & 0xff, flags, flag_sign | flag_zero);
 
-	if ((a ^ result) & (b ^ result) & 0x80)
+	if ((ai ^ result) & (bi ^ result) & 0x80)
 		*flags |= flag_ovrf;
 	else
 		*flags &= ~flag_ovrf;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x + 0x%02x + %d = 0x%02x, flags 0x%02x", ai & 0xff, bi & 0xff, carry_in, result & 0xff, *flags);
 
-	return result;
+	return result & 0xff;
 }
 
 u8 alu_sub(u8 a, u8 b, u8 *flags)
 {
-	u8 result;
+	u16 result, ai, bi;
+	u8 carry_in = !!(*flags & flag_carry);
 
-	b = ~b;
-	result = a + b;
+	ai = (u16)a;
+	bi = (u16)(~b & 0xff);
+
+	result = ai + bi;
 
 	if (*flags & flag_carry)
 		++result;
 
 	if (*flags & flag_bcd) {
-		if ((a & 0xf) + (b & 0xf) > 9)
+		if ((ai & 0xf) + (bi & 0xf) > 9)
 			result += 0x06;
 
 		if ((result >> 4) > 9)
 			result += 0x60;
 	}
 
-	if (result < a || result < b)
+	if (result < ai || result < bi || (result & 0xff00) != 0)
 		*flags |= flag_carry;
 	else
 		*flags &= ~flag_carry;
 
-	alu_flags(result, flags, flag_sign | flag_zero);
+	alu_flags(result & 0xff, flags, flag_sign | flag_zero);
 
-	if ((a ^ result) & (b ^ result) & 0x80)
+	if ((ai ^ result) & (bi ^ result) & 0x80)
 		*flags |= flag_ovrf;
 	else
 		*flags &= ~flag_ovrf;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x - 0x%02x + %d = 0x%02x, flags 0x%02x", ai & 0xff, bi & 0xff, carry_in, result & 0xff, *flags);
 
-	return result;
+	return result & 0xff;
 }
 
 u8 alu_inc(u8 a, u8 b, u8 *flags)
@@ -96,7 +103,7 @@ u8 alu_inc(u8 a, u8 b, u8 *flags)
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x + 1 = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -109,7 +116,7 @@ u8 alu_dec(u8 a, u8 b, u8 *flags)
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x - 1 = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -122,7 +129,7 @@ u8 alu_and(u8 a, u8 b, u8 *flags)
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x & 0x%02x = 0x%02x, flags 0x%02x", a & 0xff, b & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -135,7 +142,7 @@ u8 alu_or(u8 a, u8 b, u8 *flags)
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x | 0x%02x = 0x%02x, flags 0x%02x", a & 0xff, b & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -148,7 +155,7 @@ u8 alu_eor(u8 a, u8 b, u8 *flags)
 
 	alu_flags(result, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x ^ 0x%02x = 0x%02x, flags 0x%02x", a & 0xff, b & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -169,7 +176,7 @@ u8 alu_rol(u8 a, u8 b, u8 *flags)
 	else
 		*flags &= ~flag_carry;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("c << 0x%02x << c = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -190,7 +197,7 @@ u8 alu_ror(u8 a, u8 b, u8 *flags)
 	else
 		*flags &= ~flag_carry;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("c >> 0x%02x >> c = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -208,7 +215,7 @@ u8 alu_asl(u8 a, u8 b, u8 *flags)
 	else
 		*flags &= ~flag_carry;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("c << 0x%02x << 0 = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -226,7 +233,7 @@ u8 alu_lsr(u8 a, u8 b, u8 *flags)
 	else
 		*flags &= ~flag_carry;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0 >> 0x%02x >> c = 0x%02x, flags 0x%02x", a & 0xff, result & 0xff, *flags);
 
 	return result;
 }
@@ -249,26 +256,29 @@ u8 alu_bit(u8 a, u8 b, u8 *flags)
 	else
 		*flags &= ~flag_sign;
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x & 0x%02x = 0x%02x, flags 0x%02x", a & 0xff, b & 0xff, result & 0xff, *flags);
 
 	return result;
 }
 
 u8 alu_cmp(u8 a, u8 b, u8 *flags)
 {
-	u8 result;
+	u16 result, ai, bi;
 
-	b = ~b;
-	result = a + b + 1;
+	ai = (u16)a;
+	bi = (u16)(~b & 0xff);
 
-	if (result < a || result < b)
+	result = ai + bi + 1;
+
+	if (result < ai || result < bi || (result & 0xff00) != 0)
 		*flags |= flag_carry;
 	else
 		*flags &= ~flag_carry;
 
-	alu_flags(result, flags, flag_sign | flag_zero);
+	alu_flags(result & 0xff, flags, flag_sign | flag_zero);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", result, *flags);
+	DEBUG("0x%02x - 0x%02x = 0x%02x, flags 0x%02x", ai & 0xff, bi & 0xff, result & 0xff, *flags);
+	DEBUG("0x%04x - 0x%04x = 0x%04x, flags 0x%02x", ai, bi, result, *flags);
 
 	return result;
 }
@@ -277,7 +287,7 @@ u8 alu_load(u8 a, u8 b, u8 *flags)
 {
 	alu_flags(a, flags, flag_zero | flag_sign);
 
-	DEBUG("Result: 0x%02x, flags: 0x%02x", a, *flags);
+	DEBUG("0x%02x, flags 0x%02x", a & 0xff, *flags);
 
 	return a;
 }
