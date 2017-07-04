@@ -63,7 +63,11 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 	u8 carry_in = !!(*flags & flag_carry);
 
 	ai = (u16)a;
-	bi = (u16)(~b & 0xff);
+
+	if (*flags & flag_bcd)
+		bi = (u16)((0x99 - b) & 0xff);
+	else
+		bi = (u16)(~b & 0xff);
 
 	result = ai + bi;
 

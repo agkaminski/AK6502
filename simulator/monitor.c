@@ -11,7 +11,7 @@
 #include "monitor.h"
 
 typedef enum { cmd_none, cmd_help, cmd_step, cmd_run, cmd_trig, cmd_cpu,
-	cmd_speed, cmd_load, cmd_write, cmd_dump, cmd_quit } cmd_t;
+	cmd_speed, cmd_load, cmd_write, cmd_dump, cmd_put, cmd_quit } cmd_t;
 
 static inline int is_separator(char c)
 {
@@ -56,6 +56,7 @@ static void help(void)
 	printf("\t"GRN"l"RESET"oad <path> <offset> - loads content of the file <path> to the memory\n");
 	printf("\t"GRN"w"RESET"rite <offset> [data] - interactive write starting at <offset>\n");
 	printf("\t"GRN"d"RESET"ump <offset> <count> - dumps <count> bytes from memory at <offset>\n");
+	printf("\t"GRN"p"RESET"ut <reg> <val> - sets register (A, X, Y, SP, PC, FLAGS) to val\n");
 
 	printf("\t"GRN"q"RESET"uit - exits simulation\n");
 	printf("\n");
@@ -265,6 +266,58 @@ static void dump(char *line, int pos)
 	printf("\n");
 }
 
+static void put(char *line, int pos)
+{
+	char buff[5];
+	char reg[6];
+	u16 val;
+	cpustate_t cpu;
+
+	if (!next_word(line, &pos, reg, sizeof(reg))) {
+		printf("Command dump requires 2 arguments.\n");
+		return;
+	}
+
+	if (!next_word(line, &pos, buff, sizeof(buff))) {
+		printf("Command dump requires 2 arguments.\n");
+		return;
+	}
+
+	val = strtol(buff, NULL, 16);
+
+	core_getState(&cpu, NULL);
+
+	if (strcmp(reg, "A") == 0 || strcmp(reg, "a") == 0) {
+		cpu.a = val & 0xff;
+		printf("Setting A register to 0x%02x\n", val & 0xff);
+	}
+	else if (strcmp(reg, "X") == 0 || strcmp(reg, "x") == 0) {
+		cpu.x = val & 0xff;
+		printf("Setting X register to 0x%02x\n", val & 0xff);
+	}
+	else if (strcmp(reg, "Y") == 0 || strcmp(reg, "y") == 0) {
+		cpu.y = val & 0xff;
+		printf("Setting Y register to 0x%02x\n", val & 0xff);
+	}
+	else if (strcmp(reg, "SP") == 0 || strcmp(reg, "sp") == 0) {
+		cpu.sp = val & 0xff;
+		printf("Setting stack pointer to 0x%02x\n", val & 0xff);
+	}
+	else if (strcmp(reg, "PC") == 0 || strcmp(reg, "pc") == 0) {
+		cpu.pc = val;
+		printf("Setting program counter to 0x%04x\n", val);
+	}
+	else if (strcmp(reg, "FLAGS") == 0 || strcmp(reg, "flags") == 0) {
+		cpu.flags = val & 0xff;
+		printf("Setting status register to 0x%02x\n", val & 0xff);
+	}
+	else {
+		printf("Unknown reg %s\n", reg);
+	}
+
+	core_setState(&cpu);
+}
+
 static cmd_t decode_cmd(const char *cmd)
 {
 	if (strcmp("h", cmd) == 0 || strcmp("help", cmd) == 0)
@@ -285,6 +338,8 @@ static cmd_t decode_cmd(const char *cmd)
 		return cmd_write;
 	else if (strcmp("d", cmd) == 0 || strcmp("dump", cmd) == 0)
 		return cmd_dump;
+	else if (strcmp("p", cmd) == 0 || strcmp("put", cmd) == 0)
+		return cmd_put;
 	else if (strcmp("q", cmd) == 0 || strcmp("quit", cmd) == 0)
 		return cmd_quit;
 
@@ -359,6 +414,10 @@ void monitor(void)
 
 			case cmd_dump:
 				dump(line, pos);
+				break;
+
+			case cmd_put:
+				put(line, pos);
 				break;
 
 			case cmd_quit:
