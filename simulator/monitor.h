@@ -3,6 +3,6 @@
 
 #include "common/types.h"
 
-void monitor(void);
+void monitor(int mode);
 
 #endif

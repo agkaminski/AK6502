@@ -346,13 +346,17 @@ static cmd_t decode_cmd(const char *cmd)
 	return cmd_none;
 }
 
-void monitor(void)
+void monitor(int mode)
 {
 	int pos;
 	char *line;
 	char word[32];
 	size_t linesz;
 	cmd_t lastcmd = cmd_none;
+
+	if (mode) {
+		run_cpu();
+	}
 
 	printf("AK6502 simulator monitor ready.\n");
 	printf("Input "GRN"help"RESET" to see available commands\n");
