@@ -16,6 +16,7 @@ void usage(char *progname)
 	printf("Options:\n");
 	printf("  -f <file>    Initialize RAM with intel hex, srec or binary file.\n");
 	printf("  -o <offset>  Put data from file begging at offet <offset>.\n");
+	printf("  -s <freq>    Set core clock frequency to <freq> Hz (default 1 MHz)\n");
 	printf("  -r           Run CPU immediately, skip interactive mode.\n");
 	printf("  -h           This help.\n");
 }
@@ -28,10 +29,11 @@ int main(int argc, char *argv[])
 	char path[128];
 	int c;
 	int mode = 0;
+	int freq = 1000000;
 
 	memset(path, '\0', sizeof(path));
 
-	while ((c = getopt(argc, argv, "o:f:rh")) != -1) {
+	while ((c = getopt(argc, argv, "o:f:s:rh")) != -1) {
 		switch (c) {
 			case 'o':
 				offset = strtol(optarg, NULL, 0);
@@ -40,6 +42,14 @@ int main(int argc, char *argv[])
 			case 'f':
 				strncpy(path, optarg, sizeof(path) - 1);
 				path[sizeof(path) - 1] = '\0';
+				break;
+
+			case 's':
+				freq = strtol(optarg, NULL, 10);
+				if (freq == 0) {
+					WARN("Invalid frequency. Falling back to default.");
+					freq = 1000000;
+				}
 				break;
 
 			case 'r':
@@ -77,11 +87,17 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (mode && rom == NULL) {
+		WARN("Memory has not been initialized, canceling run mode.");
+		mode = 0;
+	}
+
 	memory_init(rom);
 	free(rom);
 
 	serial_init();
 	core_init();
+	core_setSpeed(freq);
 
 	INFO("Resetting CPU...");
 	core_rst();
