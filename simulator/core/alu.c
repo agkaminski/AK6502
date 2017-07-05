@@ -22,19 +22,15 @@ void alu_flags(u8 result, u8 *flags, u8 mask)
 u8 alu_add(u8 a, u8 b, u8 *flags)
 {
 	u16 result, ai, bi;
-#ifndef NDEBUG
 	u8 carry_in = !!(*flags & flag_carry);
-#endif
+
 	ai = (u16)a;
 	bi = (u16)b;
 
-	result = ai + bi;
-
-	if (*flags & flag_carry)
-		++result;
+	result = ai + bi + carry_in;
 
 	if (*flags & flag_bcd) {
-		if ((ai & 0xf) + (bi & 0xf) > 9)
+		if ((ai & 0xf) + (bi & 0xf) + carry_in > 9)
 			result += 0x06;
 
 		if ((result >> 4) > 9)
@@ -61,9 +57,8 @@ u8 alu_add(u8 a, u8 b, u8 *flags)
 u8 alu_sub(u8 a, u8 b, u8 *flags)
 {
 	u16 result, ai, bi;
-#ifndef NDEBUG
 	u8 carry_in = !!(*flags & flag_carry);
-#endif
+
 	ai = (u16)a;
 
 	if (*flags & flag_bcd)
@@ -71,13 +66,10 @@ u8 alu_sub(u8 a, u8 b, u8 *flags)
 	else
 		bi = (u16)(~b & 0xff);
 
-	result = ai + bi;
-
-	if (*flags & flag_carry)
-		++result;
+	result = ai + bi + carry_in;
 
 	if (*flags & flag_bcd) {
-		if ((ai & 0xf) + (bi & 0xf) > 9)
+		if ((ai & 0xf) + (bi & 0xf) + carry_in > 9)
 			result += 0x06;
 
 		if ((result >> 4) > 9)
