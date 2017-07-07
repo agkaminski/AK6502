@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 	memset(path, '\0', sizeof(path));
 
-	while ((c = getopt(argc, argv, "o:f:s:rh")) != -1) {
+	while ((c = getopt(argc, argv, "o:f:s:rhv")) != -1) {
 		switch (c) {
 			case 'o':
 				offset = strtol(optarg, NULL, 0);
@@ -57,8 +57,13 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'h':
-				printf("AK6502 CPU simulator. Made by Aleksander Kaminski 2017.\n");
+				printf("AK6502 CPU simulator. Made by Aleksander Kaminski in 2017.\n");
 				usage(argv[0]);
+				return 0;
+
+			case 'v':
+				printf("AK6502 CPU simulator. Made by Aleksander Kaminski 2017.\n");
+				printf("Version: %s\n", VERSION);
 				return 0;
 
 			case '?':
