@@ -105,7 +105,7 @@ static u8 serial_read(u16 offset)
 
 		case 1:
 			lock(&serial_global.mutex);
-			data = !!serial_isEmpty();
+			data = !serial_isEmpty();
 			unlock(&serial_global.mutex);
 			break;
 
@@ -128,7 +128,7 @@ static void *serial_thread(void *arg)
 		} while (ret == 0);
 
 		if (ret < 0)
-			FATAL("IO error");
+			continue;
 
 		DEBUG("Read '%c' from serial", data);
 		serial_push(data);

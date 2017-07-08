@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -Werror -O2 -ansi -std=gnu99
 LIBS = -lpthread
-VERSION = -DVERSION=\"0.1\"
 DEBUG = -DNDEBUG
+VERSION = -DVERSION=\"0.1.0\"
 INSTALL_PATH = /usr/bin/
 
 OUT = simak65
