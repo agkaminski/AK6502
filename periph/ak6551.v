@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-module AK6551
+module AK6551 #(PRESCALER = 1)
 (
 	input clk,
 	input clk_en,
@@ -29,6 +29,10 @@ module AK6551
 
 	reg txd_trigger;
 	reg rst_trigger;
+
+	reg [11:0] precounter;
+	reg [11:0] preend;
+	reg clk_en_i;
 
 	always @(posedge clk, negedge rst_n) begin
 		if (~rst_n) begin
@@ -65,7 +69,46 @@ module AK6551
 		end
 	end
 
+	always @(posedge clk, negedge rst_n) begin
+		if (~rst_n) begin
+			preend <= PRESCALER;
+		end else if (clk_en) begin
+			case (control[3:0])
+				0: preend <= PRESCALER;
+				1: preend <= 2304 + PRESCALER;;
+				2: preend <= 1536 + PRESCALER;;
+				3: preend <= 1048 + PRESCALER;;
+				4: preend <= 856 + PRESCALER;;
+				5: preend <= 768 + PRESCALER;;
+				6: preend <= 384 + PRESCALER;;
+				7: preend <= 192 + PRESCALER;;
+				8: preend <= 96 + PRESCALER;;
+				9: preend <= 64 + PRESCALER;;
+				10: preend <= 48 + PRESCALER;;
+				11: preend <= 32 + PRESCALER;
+				12: preend <= 24 + PRESCALER;
+				13: preend <= 16 + PRESCALER;
+				14: preend <= 12 + PRESCALER;
+				default: preend <= 6 + PRESCALER;
+			endcase
+		end
+	end
+
+	always @(posedge clk, negedge rst_n) begin
+		if (~rst_n) begin
+			precounter <= 0;
+			clk_en_i <= 0;
+		end	else if (clk_en) begin
+			if (precounter < preend) begin
+				precounter <= precounter + 1;
+				clk_en_i <= 0;
+			end else begin
+				precounter <= 0;
+				clk_en_i <= 1;
+			end
+		end
+	end
+
 
 
 endmodule
-
