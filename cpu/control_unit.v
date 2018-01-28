@@ -32,10 +32,10 @@ module control_unit
 		output ph2,
 		output reg sync,
 		output [2:0] const_sel,
-		output [3:0] alu_op,
-		output [3:0] alu_a_mux,
+		output reg [3:0] alu_op,
+		output reg [3:0] alu_a_mux,
 		output alu_b_mux,
-		output [3:0] load_sel,
+		output reg [3:0] load_sel,
 		output [2:0] p_bit_sel,
 		output p_set,
 		output p_clr,
@@ -46,10 +46,14 @@ module control_unit
 		output [1:0] ad_mux
 	);
 	
-	reg  [7:0] 	state;
-	reg  [7:0] 	state_next;
+	reg  [7:0] 	addr;
+	reg  [7:0] 	addr_next;
 	reg			branch;
 	wire [1:0] 	next_sel;
+	reg  [3:0]  reg_sel;
+	wire [3:0]  alu_a_mux_i;
+	wire [3:0]  load_sel_i;
+	wire [4:0]  alu_op_i;
 	
 	wire [7:0] 	step0_a;
 	wire [7:0] 	step1_a;
@@ -57,19 +61,19 @@ module control_unit
 	wire [1:0] 	register;
 	wire [3:0] 	decoder_alu_op;
 	
-	wire [28:0] control_word;
+	wire [31:0] control_word;
 	wire rw_i;
 	
-	assign ph2 = ~state[0];
-	assign {	rw_i, const_sel, alu_op, alu_a_mux, alu_b_mux,
-				load_sel, p_bit_sel, p_set, p_clr, pc_inc, spl_inc,
-				spl_dec, abh_inc, ad_mux, nmi_ack } = control_word;
+	assign ph2 = ~addr[0];
+	assign {	rw_i, const_sel, alu_op_i, alu_a_mux_i, alu_b_mux,
+				load_sel_i, p_bit_sel, p_set, p_clr, pc_inc, spl_inc,
+				spl_dec, abh_inc, ad_mux, nmi_ack, next_sel } = control_word;
 	
 	always @(posedge clk, negedge rst_n)	begin
 		if (~rst_n)
 			sync <= 1;
 		else if (clk_en) begin
-			if(state_next[7:1] == 8'h13)
+			if(addr_next[7:1] == 8'h13)
 				sync <= 1;
 			else
 				sync <= 0;
@@ -85,19 +89,19 @@ module control_unit
 	
 	always @(*) begin
 		case (next_sel)
-			2'b00:		state_next = state + 1;
-			2'b01:		state_next = int_a;
-			2'b10:		state_next = step0_a;
-			2'b11:		state_next = step1_a;
-			default:	state_next = int_a;
+			2'b00:		addr_next = addr + 1;
+			2'b01:		addr_next = int_a;
+			2'b10:		addr_next = step0_a;
+			2'b11:		addr_next = step1_a;
+			default:	addr_next = int_a;
 		endcase
 	end
 	
 	always @(posedge clk, negedge rst_n) begin
 		if (~rst_n)
-			state <= 0;
+			addr <= 0;
 		else if (clk_en)
-			state <= state_next;
+			addr <= addr_next;
 	end
 	
 	//branch control
@@ -112,6 +116,32 @@ module control_unit
 				2'b11:	branch <= ~(preg[1]^ireg[5]);		//zero
 			endcase
 		end
+	end
+	
+	always @(*) begin
+		case (register)
+			2'd0: reg_sel = 4'h1;
+			2'd1: reg_sel = 4'h2;
+			2'd2: reg_sel = 4'h3;
+			default: reg_sel = 4'hA;
+		endcase
+	end
+	
+	always @(*) begin
+		if (alu_a_mux_i == 4'hF)
+			alu_a_mux = reg_sel;
+		else
+			alu_a_mux = alu_a_mux_i;
+			
+		if (load_sel_i == 4'hF)
+			load_sel = reg_sel;
+		else
+			load_sel = load_sel_i;
+	
+		if (alu_op_i[4])
+			alu_op <= decoder_alu_op;
+		else
+			alu_op <= alu_op_i[3:0];
 	end
 	
 	opdecoder	u_opdecoder
@@ -130,10 +160,7 @@ module control_unit
 	
 	ucode		u_ucode
 	(
-		.state			(state),
-		.next_sel		(next_sel),
-		.register		(register),
-		.decoder_alu_op (decoder_alu_op),
+		.addr			(addr),
 		.control_word	(control_word)
 	);
 

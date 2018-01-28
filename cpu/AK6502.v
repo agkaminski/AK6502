@@ -65,12 +65,10 @@ module AK6502 #(parameter BCD_EN = 1)
 	
 	//preg load signals
 	wire alu_p_load;
-	reg cu_p_load;
 	
 	wire [2:0] p_bit_sel;
 	wire p_set;
 	wire p_clr;
-	reg p_i_sel;
 	
 	//register inc/dec signals
 	wire pc_inc;
@@ -111,10 +109,8 @@ module AK6502 #(parameter BCD_EN = 1)
 			din <= 8'h00;
 			dout <= 8'h00;
 			ireg <= 8'h00;
+			preg <= 8'h04;
 		end else if (clk_en_i) begin
-			p_i_sel <= 0;
-			cu_p_load <= 0;
-		
 			case(load_sel)
 				4'h1:	acc <= alu_y;
 				4'h2:	xreg <= alu_y;
@@ -126,10 +122,7 @@ module AK6502 #(parameter BCD_EN = 1)
 				4'h8:	spl <= alu_y;
 				4'h9:	dout <= alu_y;
 				4'hB:	ireg <= data_i;
-				4'hC:	begin
-					p_i_sel <= 1;
-					cu_p_load <= 1;
-				end
+				4'hC:	preg <= alu_y;
 				default:;
 			endcase
 			
@@ -145,6 +138,24 @@ module AK6502 #(parameter BCD_EN = 1)
 				spl <= spl + 1;
 			else if (spl_dec)
 				spl <= spl - 1;
+				
+			if (alu_p_load)
+				preg <= alu_flags_o;
+			else if (p_set | p_clr) begin
+				case (p_bit_sel)
+					3'b000:	preg[0] <= p_set;
+					3'b001:	preg[1] <= p_set;
+					3'b010:	preg[2] <= p_set;
+					3'b011:	preg[3] <= p_set;
+					3'b100:	preg[4] <= p_set;
+					3'b101:	preg[5] <= p_set;
+					3'b110:	preg[6] <= p_set;
+					3'b111:	preg[7] <= p_set;
+				endcase
+			end
+			
+			if (~so_i)
+				preg[7] <= 1;
 		end
 	end
 	
@@ -231,43 +242,6 @@ module AK6502 #(parameter BCD_EN = 1)
 	);
 	
 	assign data_o = dout;
-	
-	//PREG
-	always @(posedge clk, negedge rst_n) begin
-		if (~rst_n)
-			preg <= 8'b00000100;
-		else if (clk_en_i) begin 
-			if (alu_p_load | cu_p_load) begin
-				if (p_i_sel)
-					preg <= alu_y;
-				else
-					preg <= alu_flags_o;
-			end else if (p_set) begin
-				case (p_bit_sel)
-					3'b000:	preg[0] <= 1'b1;
-					3'b001:	preg[1] <= 1'b1;
-					3'b010:	preg[2] <= 1'b1;
-					3'b011:	preg[3] <= 1'b1;
-					3'b100:	preg[4] <= 1'b1;
-					3'b101:	preg[5] <= 1'b1;
-					3'b110:	preg[6] <= 1'b1;
-					3'b111:	preg[7] <= 1'b1;
-				endcase
-			end else if (p_clr) begin
-				case (p_bit_sel)
-					3'b000:	preg[0] <= 1'b0;
-					3'b001:	preg[1] <= 1'b0;
-					3'b010:	preg[2] <= 1'b0;
-					3'b011:	preg[3] <= 1'b0;
-					3'b100:	preg[4] <= 1'b0;
-					3'b101:	preg[5] <= 1'b0;
-					3'b110:	preg[6] <= 1'b0;
-					3'b111:	preg[7] <= 1'b0;
-				endcase
-			end	else if (~so_i)
-				preg[6] <= 1;
-		end
-	end
 	
 	//constans table
 	always @(*) begin

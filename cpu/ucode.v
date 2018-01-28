@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////
 	//	next_sel:											//
-	//	0	-	state + 1									//
+	//	0	-	addr + 1									//
 	//	1	-	int_a										//
 	//	2	-	instr_a										//
 	//	3	-	amode_a										//
@@ -37,13 +37,13 @@
 	//	alu_op:												//
 	//	0	-	Y = A										//
 	// 	1	-	Y = A + B + carry					N,V,Z,C	//
-	//	2	-	Y = A AND B						N,Z		//
+	//	2	-	Y = A AND B							N,Z		//
 	//	3	-	Y = {A[6:0],0}, carry = A[7]		N,Z,C	//
-	//	4	-	Y = A AND B						N,V,Z	//
+	//	4	-	Y = A AND B							N,V,Z	//
 	// 	5	-	Y = A - B							N,Z,C	//
 	//	6	-	Y = A - 1							N,Z		//
 	//	7	-	Y = A + 1							N,Z		//
-	// 	8	-	Y = A XOR B						N,Z		//
+	// 	8	-	Y = A XOR B							N,Z		//
 	//	9	-	Y = A								N,Z		//
 	//	A	-	Y = {0,A[7:1]}, carry = A[0]		N,Z,C	//
 	//	B	-	Y = A OR B							N,Z		//
@@ -105,11 +105,8 @@
 	//////////////////////////////////////////////////////////
 
 module ucode (
-	input 		[7:0] 	state,
-	output reg 	[1:0] 	next_sel,
-	input		[1:0]	register,
-	input		[3:0]	decoder_alu_op,
-	output 		[28:0] 	control_word
+	input 		[7:0] 	addr,
+	output 		[31:0] 	control_word
 );
 	
 	localparam SNEXT = 2'b00;
@@ -125,22 +122,23 @@ module ucode (
 	localparam CONST_FE = 3'h6;
 	localparam CONST_FF = 3'h7;
 	
-	localparam ALU_LOAD = 4'h0;
-	localparam ALU_ADC = 4'h1;
-	localparam ALU_AND = 4'h2;
-	localparam ALU_ASL = 4'h3;
-	localparam ALU_BIT = 4'h4;
-	localparam ALU_CMP = 4'h5;
-	localparam ALU_DEC = 4'h6;
-	localparam ALU_INC = 4'h7;
-	localparam ALU_EOR = 4'h8;
-	localparam ALU_LD = 4'h9;
-	localparam ALU_LSR = 4'hA;
-	localparam ALU_OR = 4'hB;
-	localparam ALU_ROL = 4'hC;
-	localparam ALU_ROR = 4'hD;
-	localparam ALU_SBC = 4'hE;
-	localparam ALU_ISUM = 4'hF;
+	localparam ALU_LOAD = 5'h0;
+	localparam ALU_ADC = 5'h1;
+	localparam ALU_AND = 5'h2;
+	localparam ALU_ASL = 5'h3;
+	localparam ALU_BIT = 5'h4;
+	localparam ALU_CMP = 5'h5;
+	localparam ALU_DEC = 5'h6;
+	localparam ALU_INC = 5'h7;
+	localparam ALU_EOR = 5'h8;
+	localparam ALU_LD = 5'h9;
+	localparam ALU_LSR = 5'hA;
+	localparam ALU_OR = 5'hB;
+	localparam ALU_ROL = 5'hC;
+	localparam ALU_ROR = 5'hD;
+	localparam ALU_SBC = 5'hE;
+	localparam ALU_ISUM = 5'hF;
+	localparam ALU_OP = 5'h10;
 	
 	localparam SEL_CONST = 4'h0;
 	localparam SEL_ACC = 4'h1;
@@ -155,6 +153,7 @@ module ucode (
 	localparam SEL_DIN = 4'hA;
 	localparam SEL_IREG = 4'hB;
 	localparam SEL_PREG = 4'hC;
+	localparam SEL_OP = 4'hF;
 	
 	localparam SEL_CARRY = 3'h0;
 	localparam SEL_ZERO = 3'h1;
@@ -172,7 +171,7 @@ module ucode (
 
 	reg rw;
 	reg [2:0] const_sel;
-	reg [3:0] alu_op;
+	reg [4:0] alu_op;
 	reg [3:0] alu_a;
 	reg alu_b;
 	reg [3:0] load_sel;
@@ -185,20 +184,11 @@ module ucode (
 	reg abh_inc;
 	reg [1:0] ad_mux;
 	reg nmi_ack;
-	reg [3:0] reg_sel;
-	
-	always @(*) begin
-		case (register)
-			2'd0: reg_sel = SEL_ACC;
-			2'd1: reg_sel = SEL_XREG;
-			2'd2: reg_sel = SEL_YREG;
-			default: reg_sel = SEL_DIN;
-		endcase
-	end
+	reg [1:0] next_sel;
 		
 	assign control_word = { rw, const_sel, alu_op, alu_a, alu_b, load_sel, 
 							p_bit_sel, p_set, p_clr, pc_inc, spl_inc,
-							spl_dec, abh_inc, ad_mux, nmi_ack };
+							spl_dec, abh_inc, ad_mux, nmi_ack, next_sel };
 		
 	always @(*) begin
 		//defaults
@@ -219,7 +209,7 @@ module ucode (
 		ad_mux 		= AD_AB;
 		nmi_ack		= 0;
 		
-		case (state)
+		case (addr)
 			//RESET
 			8'h00:	begin
 				p_clr = 1;
@@ -614,10 +604,10 @@ module ucode (
 			end
 			8'h5B:	begin
 				ad_mux = AD_PC;
-				alu_a = reg_sel;
+				alu_a = SEL_OP;
 				alu_b = 1;
-				alu_op = decoder_alu_op;
-				load_sel = reg_sel;
+				alu_op = ALU_OP;
+				load_sel = SEL_OP;
 				next_sel = SINT;
 			end
 			
@@ -628,10 +618,10 @@ module ucode (
 			end
 			8'h5D:	begin
 				ad_mux = AD_PC;
-				alu_a = reg_sel;
+				alu_a = SEL_OP;
 				alu_b = 1;
-				alu_op = decoder_alu_op;
-				load_sel = reg_sel;
+				alu_op = ALU_OP;
+				load_sel = SEL_OP;
 				next_sel = SINT;
 			end
 
@@ -640,8 +630,8 @@ module ucode (
 				rw = 0;
 			end
 			8'h5F:	begin
-				alu_op = decoder_alu_op;
-				alu_a = reg_sel;
+				alu_op = ALU_OP;
+				alu_a = SEL_OP;
 				load_sel = SEL_DOUT;
 				rw = 0;
 			end
@@ -822,7 +812,7 @@ module ucode (
 			end
 			8'h81:	begin
 				ad_mux = AD_PC;
-				alu_a = reg_sel;
+				alu_a = SEL_OP;
 				alu_b = 1;
 				alu_op = ALU_CMP;
 				next_sel = SINT;
@@ -835,7 +825,7 @@ module ucode (
 			end
 			8'h83:	begin
 				ad_mux = AD_PC;
-				alu_a = reg_sel;
+				alu_a = SEL_OP;
 				alu_b = 1;
 				alu_op = ALU_CMP;
 				next_sel = SINT;
@@ -1241,8 +1231,8 @@ module ucode (
 				ad_mux = AD_PC;
 				alu_a = SEL_DIN;
 				alu_b = 1;
-				alu_op = decoder_alu_op;
-				load_sel = reg_sel;
+				alu_op = ALU_OP;
+				load_sel = SEL_OP;
 				next_sel = SINT;
 			end
 			
@@ -1254,8 +1244,8 @@ module ucode (
 				ad_mux = AD_PC;
 				alu_a = SEL_DIN;
 				alu_b = 1;
-				alu_op = decoder_alu_op;
-				load_sel = reg_sel;
+				alu_op = ALU_OP;
+				load_sel = SEL_OP;
 				next_sel = SINT;
 			end
 			
