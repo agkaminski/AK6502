@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	u8 *rom = NULL;
 	char path[128];
 	int c;
-	int mode = 0;
+	int mode = mode_monitor;
 	int freq = DEFAULT_FREQ;
 
 	memset(path, '\0', sizeof(path));
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 				break;
 
 			case 'r':
-				mode = 1;
+				mode = mode_run;
 				break;
 
 			case 'h':
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (mode && rom == NULL) {
+	if (mode == mode_run && rom == NULL) {
 		WARN("Memory has not been initialized, canceling run mode.");
 		mode = 0;
 	}

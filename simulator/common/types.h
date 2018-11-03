@@ -22,4 +22,6 @@ typedef struct {
 
 typedef unsigned int cycles_t;
 
+enum { mode_monitor = 0, mode_run };
+
 #endif

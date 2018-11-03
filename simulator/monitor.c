@@ -354,9 +354,8 @@ void monitor(int mode)
 	size_t linesz;
 	cmd_t lastcmd = cmd_none;
 
-	if (mode) {
+	if (mode == mode_run)
 		run_cpu();
-	}
 
 	printf("AK6502 simulator monitor ready.\n");
 	printf("Input "GRN"help"RESET" to see available commands\n");
