@@ -10,6 +10,8 @@
 #include "bus/memory.h"
 #include "monitor.h"
 
+#define DEFAULT_FREQ 1000000
+
 void usage(char *progname)
 {
 	printf("Usage: %s [options]\n", progname);
@@ -29,7 +31,7 @@ int main(int argc, char *argv[])
 	char path[128];
 	int c;
 	int mode = 0;
-	int freq = 1000000;
+	int freq = DEFAULT_FREQ;
 
 	memset(path, '\0', sizeof(path));
 
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 				freq = strtol(optarg, NULL, 10);
 				if (freq == 0) {
 					WARN("Invalid frequency. Falling back to default.");
-					freq = 1000000;
+					freq = DEFAULT_FREQ;
 				}
 				break;
 
